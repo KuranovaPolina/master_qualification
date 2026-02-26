@@ -1,1 +1,5 @@
 .venv
+model
+.vscode
+
+src/__pycache__
