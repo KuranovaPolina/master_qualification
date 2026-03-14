@@ -1,3 +1,7 @@
+import cv2
+
+from utils import get_projection_matrix
+
 class ObjectType:
     def __init__(self, index, base_size_type, base_size):
         self.index = index # 0 / 2
@@ -8,9 +12,12 @@ class ObjectType:
         print(f"Class: {self.index}, Type: {self.base_size_type}, Size: {self.base_size}")
 
 class DistanceBySize:    
-    def __init__(self, fx, fy, object_types = {0: ObjectType(0, 1, 1.8), 2: ObjectType(2, 1, 1.4)}):
-        self.fx = fx
-        self.fy = fy
+    def __init__(self, config_path, object_types = {0: ObjectType(0, 1, 1.8), 2: ObjectType(2, 1, 1.4)}):
+        P0 = get_projection_matrix(config_path, 'P0')
+        K, _, _, _, _, _, _ = cv2.decomposeProjectionMatrix(P0)
+        
+        self.fx = K[0][0]
+        self.fy = K[1][1]
         self.object_types = object_types
     
     def calculate(self, box):

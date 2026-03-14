@@ -3,3 +3,5 @@ model
 .vscode
 
 src/__pycache__
+
+external
