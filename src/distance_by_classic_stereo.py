@@ -19,8 +19,8 @@ class DistanceByClassicStereo:
         plt.show()
 
     def get_p_matrics(self, config_path):
-        P0 = get_projection_matrix('test_data/calib/000000.txt', 'P0')
-        P1 = get_projection_matrix('test_data/calib/000000.txt', 'P1')
+        P0 = get_projection_matrix(config_path, 'P0')
+        P1 = get_projection_matrix(config_path, 'P1')
 
         return P0, P1
     

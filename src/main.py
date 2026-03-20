@@ -1,13 +1,9 @@
 from ultralytics import YOLO
-import numpy as np
-import cv2
-
-from utils import get_projection_matrix
 
 from detect import detect_and_save
 from distance_by_size import DistanceBySize
 from distance_by_classic_stereo import DistanceByClassicStereo
-# from distance_by_yolo_with_depth import DistYOLODetector
+from distance_by_zoe_depth import DistanceByZoeDepth
 
 def detect_boxes_0():
     model = YOLO('model/yolo26n.pt')
@@ -38,11 +34,30 @@ def distance_by_classic_stereo(boxes):
 
         print(d)
 
+def distance_by_zoe_depth(boxes):
+    distance_by_zoe_depth = DistanceByZoeDepth(model_type = "ZoeD_NK")
+    depth_map = distance_by_zoe_depth.calculate_depth_map('test_data/left/000000.png')
+
+    print(depth_map.shape)
+
+    for box in boxes:
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh.round().int().tolist()}")
+
+        x = box.xywh.round().int().tolist()[0][0]
+        y = box.xywh.round().int().tolist()[0][1]
+        d = depth_map[y][x]
+
+        print(x, y)
+
+        print(d)
+
 if __name__ == "__main__":
     boxes = detect_boxes_0()
 
-    distance_by_size(boxes)
-    distance_by_classic_stereo(boxes)
+    distance_by_zoe_depth(boxes)
+
+    # distance_by_size(boxes)
+    # distance_by_classic_stereo(boxes)
 
 
 
