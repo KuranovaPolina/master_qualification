@@ -54,10 +54,10 @@ def distance_by_zoe_depth(boxes):
 if __name__ == "__main__":
     boxes = detect_boxes_0()
 
-    distance_by_zoe_depth(boxes)
+    # distance_by_zoe_depth(boxes)
 
     # distance_by_size(boxes)
-    # distance_by_classic_stereo(boxes)
+    distance_by_classic_stereo(boxes)
 
 
 
