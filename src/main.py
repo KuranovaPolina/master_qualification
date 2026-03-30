@@ -1,19 +1,29 @@
+import cv2
+import os
+
+import matplotlib.pyplot as plt
+
 from ultralytics import YOLO
 
+from calib import Calibration
+from real_depth_map import DepthMap
 from detect import detect_and_save
 from distance_by_size import DistanceBySize
 from distance_by_classic_stereo import DistanceByClassicStereo
 from distance_by_zoe_depth import DistanceByZoeDepth
 
-def detect_boxes_0():
-    model = YOLO('model/yolo26n.pt')
+def detect_boxes_0(model_path = 'model/yolo26n.pt', 
+                   img_path = 'test_data/left/000020.png',
+                   output_img_path = 'left_image.jpg',
+                   detect_classes = {0: 'person', 2: 'car'}):
+    model = YOLO(model_path)
     
-    left_boxes = detect_and_save('test_data/left/000000.png', model, 'left_image.jpg', {0: 'person', 2: 'car'})
+    left_boxes = detect_and_save(img_path, model, output_img_path, detect_classes)
 
     return left_boxes
 
-def distance_by_size(boxes):
-    distanceByHeight = DistanceBySize('test_data/calib/000000.txt')
+def distance_by_size(boxes, calib):
+    distanceByHeight = DistanceBySize(calib)
 
     for box in boxes:
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
@@ -21,12 +31,18 @@ def distance_by_size(boxes):
         d = distanceByHeight.calculate(box)
         print(d)
 
-def distance_by_classic_stereo(boxes):
+def distance_by_classic_stereo(boxes, calib,
+                               left_img_path = 'test_data/left/000000.png',
+                               right_img_path = 'test_data/right/000000.png'):
     distance_by_classic_stereo = DistanceByClassicStereo()
-    depth_map = distance_by_classic_stereo.calculate_depth_map('test_data/left/000000.png', 'test_data/right/000000.png', 'test_data/calib/000000.txt')
+    depth_map = distance_by_classic_stereo.calculate_depth_map(left_img_path, right_img_path, calib)
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(depth_map)
+    plt.show()
 
     for box in boxes:
-        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh.round().int().tolist()}")
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
         x = box.xywh.round().int().tolist()[0][0]
         y = box.xywh.round().int().tolist()[0][1]
@@ -34,30 +50,59 @@ def distance_by_classic_stereo(boxes):
 
         print(d)
 
-def distance_by_zoe_depth(boxes):
-    distance_by_zoe_depth = DistanceByZoeDepth(model_type = "ZoeD_NK")
-    depth_map = distance_by_zoe_depth.calculate_depth_map('test_data/left/000000.png')
+def distance_by_zoe_depth(boxes, model_type = "ZoeD_NK", left_img_path = 'test_data/left/000000.png'):
+    distance_by_zoe_depth = DistanceByZoeDepth(model_type)
+    depth_map = distance_by_zoe_depth.calculate_depth_map(left_img_path)
 
-    print(depth_map.shape)
+    plt.figure(figsize=(10, 5))
+    plt.imshow(depth_map)
+    plt.show()
 
     for box in boxes:
-        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh.round().int().tolist()}")
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
         x = box.xywh.round().int().tolist()[0][0]
         y = box.xywh.round().int().tolist()[0][1]
         d = depth_map[y][x]
-
-        print(x, y)
 
         print(d)
 
 if __name__ == "__main__":
-    boxes = detect_boxes_0()
+    detection_model_path = 'model/yolo26n.pt'
 
-    # distance_by_zoe_depth(boxes)
+    cur_id = 0
 
-    # distance_by_size(boxes)
-    distance_by_classic_stereo(boxes)
+    left_img_path = os.path.join('test_data/left', "%06d.png" % cur_id)
+    right_img_path = os.path.join('test_data/right', "%06d.png" % cur_id)
+    calib_file_path = os.path.join('test_data/calib', "%06d.txt" % cur_id)
+    velodyne_file_path = os.path.join('test_data/velodyne', "%06d.bin" % cur_id)
+
+    calibration = Calibration(calib_file_path)
+
+    depth_map = DepthMap().get(
+        img_shape = cv2.imread(left_img_path).shape, 
+        velodyne_file_path = velodyne_file_path, 
+        calib = calibration, 
+        grid_size = 1
+    )
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(depth_map)
+    plt.show()
+
+    boxes = detect_boxes_0(
+        model_path = detection_model_path,
+        img_path = left_img_path,
+        output_img_path = 'detection/left_image.png',
+        detect_classes = {0: 'person', 2: 'car'}
+    )
+
+    distance_by_size(boxes, calibration)
+
+    distance_by_classic_stereo(boxes, calibration, left_img_path = left_img_path,
+        right_img_path = right_img_path)
+
+    distance_by_zoe_depth(boxes, model_type = "ZoeD_NK", left_img_path = left_img_path)
 
 
 
