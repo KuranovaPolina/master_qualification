@@ -113,7 +113,8 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         left_img_data_folder = 'test_data/left', 
                         right_img_data_folder = 'test_data/right', 
                         calib_data_folder = 'test_data/calib', 
-                        velodyne_data_folder = 'test_data/velodyne'):
+                        velodyne_data_folder = 'test_data/velodyne',
+                        grid_size = 6):
     left_img_path = os.path.join(left_img_data_folder, "%06d.png" % cur_id)
     right_img_path = os.path.join(right_img_data_folder, "%06d.png" % cur_id)
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
@@ -131,7 +132,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
     distances = {}
 
     real_distances = distance_from_real_depth_map(
-        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size = 5)
+        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size)
     distances["real_distances"] = real_distances
 
     distances_by_size = distance_by_size(boxes, calibration)
