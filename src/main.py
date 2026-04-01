@@ -131,7 +131,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
     distances = {}
 
     real_distances = distance_from_real_depth_map(
-        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size = 3)
+        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size = 5)
     distances["real_distances"] = real_distances
 
     distances_by_size = distance_by_size(boxes, calibration)
