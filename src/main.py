@@ -110,11 +110,14 @@ def distance_from_real_depth_map(real_depth_map_model, boxes, img_shape, velodyn
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                         DistanceByClassicStereo_model = None, 
                         DistanceByZoeDepth_model = None, 
-                        test_data_folder = 'test_data'):
-    left_img_path = os.path.join(test_data_folder, "left/%06d.png" % cur_id)
-    right_img_path = os.path.join(test_data_folder, "right/%06d.png" % cur_id)
-    calib_file_path = os.path.join(test_data_folder, "calib/%06d.txt" % cur_id)
-    velodyne_file_path = os.path.join(test_data_folder, "velodyne/%06d.bin" % cur_id)
+                        left_img_data_folder = 'test_data/left', 
+                        right_img_data_folder = 'test_data/right', 
+                        calib_data_folder = 'test_data/calib', 
+                        velodyne_data_folder = 'test_data/velodyne'):
+    left_img_path = os.path.join(left_img_data_folder, "%06d.png" % cur_id)
+    right_img_path = os.path.join(right_img_data_folder, "%06d.png" % cur_id)
+    calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
+    velodyne_file_path = os.path.join(velodyne_data_folder, "%06d.bin" % cur_id)
 
     calibration = Calibration(calib_file_path)
 
@@ -165,8 +168,11 @@ if __name__ == "__main__":
     for cur_id in [0, 1, 20]:
         img_distances = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
-                            # DistanceByZoeDepth_model = DistanceByZoeDepth_model, 
-                            test_data_folder = 'test_data')
+                            # DistanceByZoeDepth_model = DistanceByZoeDepth_model,
+                            left_img_data_folder = 'test_data/left', 
+                            right_img_data_folder = 'test_data/right', 
+                            calib_data_folder = 'test_data/calib', 
+                            velodyne_data_folder = 'test_data/velodyne')
         
         real_distances.extend(img_distances["real_distances"])
         distances_by_size.extend(img_distances["distances_by_size"])
