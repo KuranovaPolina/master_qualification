@@ -114,7 +114,8 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         right_img_data_folder = 'test_data/right', 
                         calib_data_folder = 'test_data/calib', 
                         velodyne_data_folder = 'test_data/velodyne',
-                        grid_size = 6):
+                        grid_size = 10):
+    print(grid_size)
     left_img_path = os.path.join(left_img_data_folder, "%06d.png" % cur_id)
     right_img_path = os.path.join(right_img_data_folder, "%06d.png" % cur_id)
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
@@ -132,7 +133,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
     distances = {}
 
     real_distances = distance_from_real_depth_map(
-        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size)
+        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size = grid_size)
     distances["real_distances"] = real_distances
 
     distances_by_size = distance_by_size(boxes, calibration)
@@ -166,7 +167,7 @@ if __name__ == "__main__":
     distances_by_classic_stereo = []
     distances_by_zoe_depth = []
 
-    for cur_id in [0, 1, 20]:
+    for cur_id in [20]:
         img_distances = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
                             # DistanceByZoeDepth_model = DistanceByZoeDepth_model,
