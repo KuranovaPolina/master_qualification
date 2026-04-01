@@ -1,6 +1,23 @@
 import cv2
 import numpy as np
 
+def absRel(pred: np.ndarray, gt: np.ndarray):
+    # Create mask for valid pixels (GT > 0 and finite values)
+    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    
+    # Extract valid values
+    pred_valid = pred[mask]
+    gt_valid = gt[mask]
+    
+    # Check if we have enough valid pixels
+    if len(gt_valid) == 0:
+        return np.nan
+    
+    # Calculate AbsRel
+    abs_rel = np.mean(np.abs(pred_valid - gt_valid) / gt_valid)
+    
+    return abs_rel
+
 def np2Img(np_image, Normalize=True):
     np_image = np.moveaxis(np_image, 0, -1)
     if Normalize:

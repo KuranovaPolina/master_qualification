@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import os
 
 import matplotlib.pyplot as plt
@@ -11,6 +12,8 @@ from detect import detect_and_save
 from distance_by_size import DistanceBySize
 from distance_by_classic_stereo import DistanceByClassicStereo
 from distance_by_zoe_depth import DistanceByZoeDepth
+
+from utils import absRel
 
 def detect_boxes_0(model, img_path, output_img_path, detect_classes = {0: 'person', 2: 'car'}):    
     return detect_and_save(img_path, model, output_img_path, detect_classes)
@@ -122,26 +125,29 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         detect_classes = {0: 'person', 2: 'car'}
     )
 
-    real_distances = distance_from_real_depth_map(DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size = 3)
+    distances = {}
+
+    real_distances = distance_from_real_depth_map(
+        DepthMap_model, boxes, cv2.imread(left_img_path).shape, velodyne_file_path, calibration, grid_size = 3)
+    distances["real_distances"] = real_distances
 
     distances_by_size = distance_by_size(boxes, calibration)
+    distances["distances_by_size"] = distances_by_size
 
     if DistanceByClassicStereo_model != None:
         distances_by_classic_stereo = distance_by_classic_stereo(
-            DistanceByClassicStereo_model, boxes, calibration, left_img_path = left_img_path,
+            DistanceByClassicStereo_model, boxes, calibration, 
+            left_img_path = left_img_path,
             right_img_path = right_img_path)
+        distances["distances_by_classic_stereo"] = distances_by_classic_stereo
 
     if DistanceByZoeDepth_model != None:
         distances_by_zoe_depth = distance_by_zoe_depth(DistanceByZoeDepth_model, boxes, left_img_path = left_img_path)
+        distances["distances_by_zoe_depth"] = distances_by_zoe_depth
 
-    print("real_distances: ", real_distances)
-    print("distances_by_size: ", distances_by_size)
+    return distances
 
-    if DistanceByClassicStereo_model != None:
-        print("distances_by_classic_stereo: ", distances_by_classic_stereo)
 
-    if DistanceByZoeDepth_model != None:
-        print("distances_by_zoe_depth: ", distances_by_zoe_depth)
 
 if __name__ == "__main__":
     # TODO: try get distanse in the middle of the object
@@ -151,13 +157,32 @@ if __name__ == "__main__":
     DistanceByClassicStereo_model = DistanceByClassicStereo()
     DistanceByZoeDepth_model = DistanceByZoeDepth("ZoeD_NK")
 
-    # cur_id = 20
+    real_distances = []
+    distances_by_size = []
+    distances_by_classic_stereo = []
+    distances_by_zoe_depth = []
 
     for cur_id in [0, 1, 20]:
-        calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
+        img_distances = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
-                            DistanceByZoeDepth_model = DistanceByZoeDepth_model, 
+                            # DistanceByZoeDepth_model = DistanceByZoeDepth_model, 
                             test_data_folder = 'test_data')
+        
+        real_distances.extend(img_distances["real_distances"])
+        distances_by_size.extend(img_distances["distances_by_size"])
+        distances_by_classic_stereo.extend(img_distances["distances_by_classic_stereo"])
+        # distances_by_zoe_depth.extend(img_distances["distances_by_zoe_depth"])
+
+    print(real_distances)
+    print(distances_by_size)
+    print(distances_by_classic_stereo)
+    # print(distances_by_zoe_depth)
+
+    distances_by_size_abs_rel = absRel(np.array(distances_by_size), np.array(real_distances))
+    distances_by_classic_stereo_abs_rel = absRel(np.array(distances_by_classic_stereo), np.array(real_distances))
+
+    print(distances_by_size_abs_rel)
+    print(distances_by_classic_stereo_abs_rel)
 
 
 
