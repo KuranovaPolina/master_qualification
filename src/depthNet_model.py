@@ -6,12 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 from torch.autograd import Variable
-from torch import Tensor
-import cv2
-import math
-import numpy as np
-import time
-from numpy.linalg import inv
 
 def down_conv_layer(input_channels, output_channels, kernel_size):
     return nn.Sequential(
@@ -182,17 +176,17 @@ class depthNet(nn.Module):
         upconv4 = self.upconv4(iconv5)
         iconv4 = self.iconv4(torch.cat((upconv4, conv3), 1))
         disp4 = 2.0 * self.disp4(iconv4)
-        udisp4 = F.upsample(disp4, scale_factor=2)
+        udisp4 = F.interpolate(disp4, scale_factor=2, mode='bilinear', align_corners=False)
 
         upconv3 = self.upconv3(iconv4)
         iconv3 = self.iconv3(torch.cat((upconv3, conv2, udisp4), 1))
         disp3 = 2.0 * self.disp3(iconv3)
-        udisp3 = F.upsample(disp3, scale_factor=2)
+        udisp3 = F.interpolate(disp3, scale_factor=2, mode='bilinear', align_corners=False)
 
         upconv2 = self.upconv2(iconv3)
         iconv2 = self.iconv2(torch.cat((upconv2, conv1, udisp3), 1))
         disp2 = 2.0 * self.disp2(iconv2)
-        udisp2 = F.upsample(disp2, scale_factor=2)
+        udisp2 = F.interpolate(disp2, scale_factor=2, mode='bilinear', align_corners=False)
 
         upconv1 = self.upconv1(iconv2)
         iconv1 = self.iconv1(torch.cat((upconv1, udisp2), 1))

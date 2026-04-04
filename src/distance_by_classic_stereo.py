@@ -34,6 +34,7 @@ class DistanceByClassicStereo:
         K, R, t, _, _, _, _ = cv2.decomposeProjectionMatrix(P)
 
         return K, R, t / t[3]
+    # t[3] (нужно иначе произведение не собирается)
     
     def calculate_depth_map(self, left_path, right_path, calib):
         # Read the stereo-pair of images

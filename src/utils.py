@@ -12,29 +12,58 @@ def absRel(pred: np.ndarray, gt: np.ndarray):
     # Check if we have enough valid pixels
     if len(gt_valid) == 0:
         return np.nan
-    
-    # Calculate AbsRel
+
     abs_rel = np.mean(np.abs(pred_valid - gt_valid) / gt_valid)
     
     return abs_rel
 
-def np2Img(np_image, Normalize=True):
-    np_image = np.moveaxis(np_image, 0, -1)
-    if Normalize:
-        normalized = (np_image - np_image.min()) / (
-            np_image.max() - np_image.min()) * 255.0
-    else:
-        normalized = np_image
-    normalized = normalized[:, :, [2, 1, 0]]
-    normalized = normalized.astype(np.uint8)
-    return normalized
+def RMSE(pred: np.ndarray, gt: np.ndarray):
+    # Create mask for valid pixels (GT > 0 and finite values)
+    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    
+    # Extract valid values
+    pred_valid = pred[mask]
+    gt_valid = gt[mask]
+    
+    # Check if we have enough valid pixels
+    if len(gt_valid) == 0:
+        return np.nan
 
-def np2Depth(input_tensor, invaild_mask):
-    normalized = (input_tensor - input_tensor.min()) / (input_tensor.max() - input_tensor.min()) * 255.0
-    normalized = normalized.astype(np.uint8)
-    normalized = cv2.applyColorMap(normalized, cv2.COLORMAP_RAINBOW)
-    normalized[invaild_mask] = 0
-    return normalized
+    rmse = np.sqrt(np.mean(np.square(np.abs(pred_valid - gt_valid))))
+    
+    return rmse
+
+def RMSE_log(pred: np.ndarray, gt: np.ndarray):
+    # Create mask for valid pixels (GT > 0 and finite values)
+    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    
+    # Extract valid values
+    pred_valid = pred[mask]
+    gt_valid = gt[mask]
+    
+    # Check if we have enough valid pixels
+    if len(gt_valid) == 0:
+        return np.nan
+
+    rmse = np.sqrt(np.mean(np.square(np.abs(np.log(pred_valid) - np.log(gt_valid)))))
+    
+    return rmse
+
+def sqRel(pred: np.ndarray, gt: np.ndarray):
+    # Create mask for valid pixels (GT > 0 and finite values)
+    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    
+    # Extract valid values
+    pred_valid = pred[mask]
+    gt_valid = gt[mask]
+    
+    # Check if we have enough valid pixels
+    if len(gt_valid) == 0:
+        return np.nan
+    
+    abs_rel = np.mean(np.square(np.abs(pred_valid - gt_valid)) / gt_valid)
+    
+    return abs_rel
 
 # From Github https://github.com/balcilar/DenseDepthMap
 def dense_map(Pts, n, m, grid):
