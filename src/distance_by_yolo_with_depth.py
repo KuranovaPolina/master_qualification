@@ -11,7 +11,6 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow_model_optimization.sparsity import keras as sparsity
-from PIL import Image
 
 from yolo_with_depth.yolo3.model import get_yolo3_model
 from yolo_with_depth.yolo3.postprocess_np import yolo3_postprocess_np
@@ -20,18 +19,10 @@ from yolo_with_depth.yolo2.postprocess_np import yolo2_postprocess_np
 from yolo_with_depth.common.data_utils import preprocess_image
 from yolo_with_depth.common.utils import get_classes, get_anchors, get_colors, optimize_tf_gpu
 
-import matplotlib.pyplot as plt
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 optimize_tf_gpu(tf, K)
-
-#tf.enable_eager_execution()
-
-
-import cv2
-import numpy as np
 
 def draw_boxes(image, boxes, classes, scores, distances, class_names, colors):    
     for i in range(len(boxes)):
@@ -51,15 +42,6 @@ def draw_boxes(image, boxes, classes, scores, distances, class_names, colors):
             
         # Рисуем прямоугольник
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness= 1)
-        
-        # Вычисляем размер текста для фона
-        # (label_w, label_h), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, thickness=1)
-        
-        # # Рисуем фон под текст
-        # cv2.rectangle(image, 
-        #               (x1, y1 - label_h - baseline), 
-        #               (x1 + label_w, y1), 
-        #               color, thickness=cv2.FILLED)
         
         # Рисуем текст
         cv2.putText(image, label, 
@@ -96,9 +78,6 @@ class YOLO_np():
         # Load model, or construct model and load weights.
         num_anchors = len(self.anchors)
         num_classes = len(self.class_names)
-        #YOLOv3 model has 9 anchors and 3 feature layers but
-        #Tiny YOLOv3 model has 6 anchors and 2 feature layers,
-        #so we can calculate feature layers number to get model type
         num_feature_layers = num_anchors//3
 
         try:
