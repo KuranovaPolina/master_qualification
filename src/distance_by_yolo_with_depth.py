@@ -57,7 +57,6 @@ class YOLO_np():
         self.class_names = get_classes("model/configs/kitty_all_except_nodata.txt")
         self.anchors = get_anchors("model/configs/yolo3_anchors.txt")
         self.colors = get_colors(self.class_names)
-        K.set_learning_phase(0)
 
         self.model_type = "yolo3_xception"
         self.weights_path = "model/ep043-dump.h5"

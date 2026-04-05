@@ -93,7 +93,7 @@ def get_yolo2_model(model_type, num_anchors, num_classes, input_tensor=None, inp
 
 
 
-def get_yolo2_train_model(model_type, anchors, num_classes, weights_path=None, freeze_level=1, optimizer=Adam(lr=1e-3, decay=1e-6), label_smoothing=0, elim_grid_sense=False, model_pruning=False, pruning_end_step=10000):
+def get_yolo2_train_model(model_type, anchors, num_classes, weights_path=None, freeze_level=1, optimizer=Adam(learning_rate=1e-3, decay=1e-6), label_smoothing=0, elim_grid_sense=False, model_pruning=False, pruning_end_step=10000):
     '''create the training model, for YOLOv2'''
     #K.clear_session() # get a new session
     num_anchors = len(anchors)
