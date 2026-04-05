@@ -244,27 +244,3 @@ if __name__ == "__main__":
           classic_stereo_absRel, classic_stereo_RMSE, classic_stereo_RMSE_log, classic_stereo_sq_rel)
     print("MVDepthNet:", 
           MVDepthNet_absRel, MVDepthNet_RMSE, MVDepthNet_RMSE_log, MVDepthNet_sq_rel)
-
-
-
-# def distance_by_YOLO_with_depth():
-#     WEIGHTS_PATH = "../external/dist_yolo_core/model_data/yolo3_xception_dist_final.h5"
-#     TEST_IMAGE = "../test_data/left/000000.png" 
-
-#     detector = DistYOLODetector(
-#         weights_path=WEIGHTS_PATH,
-#         config={'score': 0.3, 'iou': 0.45},
-#         verbose=True
-#     )
-
-#     results = detector.detect(TEST_IMAGE)
-        
-#     for i, obj in enumerate(results, 1):
-#         print(f"[{i}] {obj['class']:12s} | "
-#                 f"conf: {obj['confidence']:.3f} | "
-#                 f"dist: {obj['distance_m']:5.2f} м | "
-#                 f"bbox: {obj['bbox']}")
-        
-#     img = cv2.imread(TEST_IMAGE)
-#     vis = detector.draw_results(img, results)
-#     cv2.imwrite("dist_yolo_output.jpg", vis)
