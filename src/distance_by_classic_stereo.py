@@ -54,3 +54,26 @@ class DistanceByClassicStereo:
 
         return depth_map
 
+def distance_by_classic_stereo(classic_stereo_model, boxes, calib, left_img_path, right_img_path):
+    depth_map = classic_stereo_model.calculate_depth_map(left_img_path, right_img_path, calib)
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(depth_map, cmap='flag')
+    plt.title("Classic stereo depth map")
+    plt.show()
+
+    distances = []
+
+    for box in boxes:
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
+
+        x = box.xywh.round().int().tolist()[0][0]
+        y = box.xywh.round().int().tolist()[0][1]
+        d = depth_map[y][x]
+
+        print(d)
+
+        distances.append(d)
+
+    return distances
+

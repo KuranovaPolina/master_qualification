@@ -9,9 +9,12 @@ import cv2
 import time
 import tensorflow as tf
 import numpy as np
+import sys
+
 from tensorflow.keras import backend as K
 from tensorflow_model_optimization.sparsity import keras as sparsity
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'models')))
 from yolo_with_depth.yolo3.model import get_yolo3_model
 from yolo_with_depth.yolo3.postprocess_np import yolo3_postprocess_np
 from yolo_with_depth.yolo2.model import get_yolo2_model

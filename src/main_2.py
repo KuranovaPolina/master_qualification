@@ -10,7 +10,7 @@ from calib import Calibration
 from real_depth_map import DepthMap
 from distance_by_yolo_with_depth import YOLO_np
 
-from utils import absRel, RMSE, RMSE_log, sqRel
+from utils import calculate_metrics
 
 def distance_by_YOLO_with_depth(yolo_with_depth_model, img_path):
     image = Image.open(img_path)
@@ -89,11 +89,6 @@ if __name__ == "__main__":
 
     print(distances_by_yolo_with_depth)
 
-    yolo_absRel = absRel(np.array(distances_by_yolo_with_depth), np.array(real_distances))
-    yolo_RMSE = RMSE(np.array(distances_by_yolo_with_depth), np.array(real_distances))
-    yolo_RMSE_log = RMSE_log(np.array(distances_by_yolo_with_depth), np.array(real_distances))
-    yolo_sq_rel = sqRel(np.array(distances_by_yolo_with_depth), np.array(real_distances))
-
     print("\t\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel")
-    print("yolo_with_depth:", yolo_absRel, yolo_RMSE, yolo_RMSE_log, yolo_sq_rel)
+    print("yolo_with_depth:", calculate_metrics(np.array(distances_by_yolo_with_depth), np.array(real_distances)))
 

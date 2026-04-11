@@ -32,3 +32,17 @@ class DistanceBySize:
             return self.fy * object_type.base_size / (box.xywh[0][3].item())
         else:
             return 0
+
+def distance_by_size(boxes, calib):
+    distanceByHeight = DistanceBySize(calib)
+
+    distances = []
+
+    for box in boxes:
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
+
+        d = distanceByHeight.calculate(box)
+        print(d)
+        distances.append(d)
+
+    return distances

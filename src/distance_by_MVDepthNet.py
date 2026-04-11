@@ -2,11 +2,13 @@ import cv2
 import numpy as np
 from numpy.linalg import inv
 
-from depthNet_model import depthNet
+from models.MvDepthNet_model import depthNet
 
 import torch
 import torch.backends.cudnn as cudnn
 from torch import Tensor
+
+import matplotlib.pyplot as plt
 
 class DistanceByMVDepthNet:
     def __init__(self, model_path, device = 'cpu'):
@@ -114,3 +116,26 @@ class DistanceByMVDepthNet:
         depth_map = cv2.resize(depth_map, (default_width, default_height), interpolation=cv2.INTER_LINEAR)
         
         return depth_map
+
+def distance_by_MVDepthNet(mvdepthnet_model, boxes, calib, left_img_path, right_img_path):
+    depth_map = mvdepthnet_model.calculate_depth_map(left_img_path, right_img_path, calib)
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(depth_map, cmap='flag')
+    plt.title("MVDepthNet map")
+    plt.show()
+
+    distances = []
+
+    for box in boxes:
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
+
+        x = box.xywh.round().int().tolist()[0][0]
+        y = box.xywh.round().int().tolist()[0][1]
+        d = depth_map[y][x]
+
+        print(d)
+
+        distances.append(d)
+
+    return distances

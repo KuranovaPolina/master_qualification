@@ -65,6 +65,14 @@ def sqRel(pred: np.ndarray, gt: np.ndarray):
     
     return abs_rel
 
+def calculate_metrics(pred: np.ndarray, gt: np.ndarray):
+    absRel_metrics = absRel(pred, gt)
+    RMSE_metrics = RMSE(pred, gt)
+    RMSE_log_metrics = RMSE_log(pred, gt)
+    sqRel_metrics = sqRel(pred, gt)
+
+    return absRel_metrics, RMSE_metrics, RMSE_log_metrics, sqRel_metrics
+
 # From Github https://github.com/balcilar/DenseDepthMap
 def dense_map(Pts, n, m, grid):
     ng = 2 * grid + 1

@@ -8,10 +8,7 @@ from calib import Calibration
 from real_depth_map import DepthMap
 from detect import detect_and_save
 
-class_names = ["person", "bicycle", "car"]
-class_w = [55, 30, 160]
-class_h = [175, 30, 180]
-class_d = [30, 30, 400]
+from calib import class_names, class_w, class_h, class_d
 
 def detect_boxes_0(model, img_path, output_img_path, detect_classes = {0: 'person', 2: 'car'}):    
     return detect_and_save(img_path, model, output_img_path, detect_classes)
@@ -34,6 +31,10 @@ def collect_dataset_for_DisNet(real_depth_map_model, boxes, img_shape, velodyne_
 
         d = depth_map[y][x]
 
+        if d == 0:
+            print(f"Distance equal 0.")
+            continue
+
         key = f"{img_id}_{idx}"
 
         annotations[key] = {
@@ -50,7 +51,7 @@ def collect_dataset_for_DisNet(real_depth_map_model, boxes, img_shape, velodyne_
         }
 
     if not annotations:
-        print(f"⚠️ No boxes detected for image {img_id}. Skipping file save.")
+        print(f"No boxes detected for image {img_id}. Skipping file save.")
         return
 
     os.makedirs(output_folder, exist_ok=True)
@@ -64,6 +65,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         img_data_folder = 'test_data/left', 
                         calib_data_folder = 'test_data/calib', 
                         velodyne_data_folder = 'test_data/velodyne',
+                        output_folder = 'test_data/velodyne',
                         grid_size = 10):
     img_path = os.path.join(img_data_folder, "%06d.png" % cur_id)
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
@@ -80,7 +82,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
 
 
     collect_dataset_for_DisNet(
-        DepthMap_model, boxes, cv2.imread(img_path).shape, velodyne_file_path, calibration, cur_id, "output/", grid_size = grid_size)
+        DepthMap_model, boxes, cv2.imread(img_path).shape, velodyne_file_path, calibration, cur_id, output_folder, grid_size = grid_size)
 
 
 
@@ -88,9 +90,10 @@ if __name__ == "__main__":
     YOLO_model = YOLO('model/yolo26n.pt')
     DepthMap_model = DepthMap()
 
-    for cur_id in [0, 1, 2, 20]:
+    for cur_id in range(100):
         calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
-                            img_data_folder = 'test_data/left', 
-                            calib_data_folder = 'test_data/calib', 
-                            velodyne_data_folder = 'test_data/velodyne',
+                            img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/training/image_2', 
+                            calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/training/calib', 
+                            velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/training/velodyne',
+                            output_folder = '../kitti_dataset_convert',
                             grid_size = 5)
