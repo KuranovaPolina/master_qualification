@@ -93,7 +93,7 @@ if __name__ == "__main__":
     distances_by_MVDepthNet = []
     distances_by_DisNet = []
 
-    for cur_id in [0]:
+    for cur_id in [0, 1, 2, 20]:
         img_distances = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
                             # DistanceByZoeDepth_model = DistanceByZoeDepth_model,

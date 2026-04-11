@@ -8,7 +8,7 @@ from calib import Calibration
 from real_depth_map import DepthMap
 from detect import detect_and_save
 
-from calib import class_names, class_w, class_h, class_d
+from classes_config import config
 
 def detect_boxes_0(model, img_path, output_img_path, detect_classes = {0: 'person', 2: 'car'}):    
     return detect_and_save(img_path, model, output_img_path, detect_classes)
@@ -38,15 +38,15 @@ def collect_dataset_for_DisNet(real_depth_map_model, boxes, img_shape, velodyne_
         key = f"{img_id}_{idx}"
 
         annotations[key] = {
-            "class": class_names[int(box.cls.item())],
+            "class": config[int(box.cls.item())]["class_name"],
             "distance": d,
             "height": h,
             "width": w,
             "img_height": img_shape[0],
             "img_width": img_shape[1],
-            "size_d": class_d[int(box.cls.item())],
-            "size_h": class_h[int(box.cls.item())],
-            "size_w": class_w[int(box.cls.item())],
+            "size_d": config[int(box.cls.item())]["class_d_sm"],
+            "size_h": config[int(box.cls.item())]["class_h_sm"],
+            "size_w": config[int(box.cls.item())]["class_w_sm"],
             "name": f"{img_id}.png"
         }
 

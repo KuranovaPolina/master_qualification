@@ -1,10 +1,5 @@
 import numpy as np
 
-class_names = ["person", "bicycle", "car"]
-class_w = [55, 30, 160]
-class_h = [175, 30, 180]
-class_d = [30, 30, 400]
-
 # From Github https://github.com/BerensRWU/DenseMap#
 class Calibration:
     def __init__(self, calib_filepath):

@@ -8,7 +8,7 @@ from models.DisNet_model import construct_DisNet_model
 from keras.models import load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
-from calib import class_names, class_w, class_h, class_d
+from classes_config import config
 
 class DistanceByDisNet:
     def __init__(self, model_path = "model/best_disnet_model.keras"):
@@ -26,11 +26,11 @@ class DistanceByDisNet:
         width = (box.xywh.tolist()[0][2] / img_shape[1])
         height = (box.xywh.tolist()[0][3] / img_shape[0])
         diagonal = np.sqrt(np.square(width) + np.square(height))
-        c_h = class_h[int(box.cls.item())]
-        c_w = class_w[int(box.cls.item())]
-        c_d = class_d[int(box.cls.item())]
+        class_h_sm = config[int(box.cls.item())]["class_h_sm"]
+        class_w_sm = config[int(box.cls.item())]["class_w_sm"]
+        class_d_sm = config[int(box.cls.item())]["class_d_sm"]
 
-        return np.array([[1 / width, 1 / height, 1 / diagonal, c_h, c_w, c_d]])
+        return np.array([[1 / width, 1 / height, 1 / diagonal, class_h_sm, class_w_sm, class_d_sm]])
 
     def predict(self, box, img_shape):
         return self.model.predict(self.get_X_from_box(box, img_shape))[0][0]
