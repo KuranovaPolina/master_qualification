@@ -33,7 +33,7 @@ def distance_by_zoe_depth(zoe_depth_model, boxes, left_img_path):
         y = box.xywh.round().int().tolist()[0][1]
         d = depth_map[y][x]
 
-        print(d)
+        # print(d)
 
         distances.append(d)
 

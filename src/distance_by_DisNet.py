@@ -47,7 +47,7 @@ def distance_by_DisNet(DisNet_model, boxes, img_shape):
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
         d = DisNet_model.predict(box, img_shape)
-        print(d)
+        # print(d)
         distances.append(d)
 
     return distances

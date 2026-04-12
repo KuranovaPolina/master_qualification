@@ -42,7 +42,7 @@ def distance_by_size(boxes, calib):
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
         d = distanceByHeight.calculate(box)
-        print(d)
+        # print(d)
         distances.append(d)
 
     return distances

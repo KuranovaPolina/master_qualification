@@ -70,7 +70,7 @@ def distance_from_real_depth_map_2(real_depth_map_model, boxes, img_shape, velod
 
         d = depth_map[int(y)][int(x)]
 
-        print(d)
+        # print(d)
 
         distances.append(d)
 

@@ -134,7 +134,7 @@ def distance_by_MVDepthNet(mvdepthnet_model, boxes, calib, left_img_path, right_
         y = box.xywh.round().int().tolist()[0][1]
         d = depth_map[y][x]
 
-        print(d)
+        # print(d)
 
         distances.append(d)
 

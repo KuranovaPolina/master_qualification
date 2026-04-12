@@ -80,7 +80,6 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         detect_classes = {0: 'person', 2: 'car'}
     )
 
-
     collect_dataset_for_DisNet(
         DepthMap_model, boxes, cv2.imread(img_path).shape, velodyne_file_path, calibration, cur_id, output_folder, grid_size = grid_size)
 
