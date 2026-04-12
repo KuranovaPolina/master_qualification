@@ -27,8 +27,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         left_img_data_folder = 'test_data/left', 
                         right_img_data_folder = 'test_data/right', 
                         calib_data_folder = 'test_data/calib', 
-                        velodyne_data_folder = 'test_data/velodyne',
-                        grid_size = 10):
+                        velodyne_data_folder = 'test_data/velodyne', grid_size = 1):
     left_img_path = os.path.join(left_img_data_folder, "%06d.png" % cur_id)
     right_img_path = os.path.join(right_img_data_folder, "%06d.png" % cur_id)
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
@@ -94,9 +93,9 @@ if __name__ == "__main__":
     YOLO_model = YOLO('model/yolo26m.pt')
     DepthMap_model = DepthMap()
     DistanceByClassicStereo_model = DistanceByClassicStereo()
-    DistanceByZoeDepth_model = DistanceByZoeDepth("ZoeD_NK")
-    DistanceByMVDepthNet_model = DistanceByMVDepthNet(model_path = 'model/opensource_model.pth.tar') 
-    DisNet_model = DistanceByDisNet("model/best_disnet_model.keras")
+    # DistanceByZoeDepth_model = DistanceByZoeDepth("ZoeD_NK")
+    # DistanceByMVDepthNet_model = DistanceByMVDepthNet(model_path = 'model/opensource_model.pth.tar') 
+    # DisNet_model = DistanceByDisNet("model/best_disnet_model.keras")
 
     real_distances = []
     distances_by_size = []
@@ -114,27 +113,29 @@ if __name__ == "__main__":
     for cur_id in [0, 1, 2, 20]:
         img_distances, times = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
-                            DistanceByZoeDepth_model = DistanceByZoeDepth_model,
-                            DistanceByMVDepthNet_model = DistanceByMVDepthNet_model,
-                            DisNet_model = DisNet_model,
+                            # DistanceByZoeDepth_model = DistanceByZoeDepth_model,
+                            # DistanceByMVDepthNet_model = DistanceByMVDepthNet_model,
+                            # DisNet_model = DisNet_model,
                             left_img_data_folder = 'test_data/left', 
                             right_img_data_folder = 'test_data/right', 
                             calib_data_folder = 'test_data/calib', 
-                            velodyne_data_folder = 'test_data/velodyne',
-                            grid_size = 5)
+                            velodyne_data_folder = 'test_data/velodyne'
+                            # ,
+                            # grid_size = 5
+                            )
         
         real_distances.extend(img_distances["real_distances"])
         distances_by_size.extend(img_distances["by_size"])
         distances_by_classic_stereo.extend(img_distances["classic_stereo"])
-        distances_by_Zoe_depth.extend(img_distances["Zoe"])
-        distances_by_MVDepthNet.extend(img_distances["MVDepthNet"])
-        distances_by_DisNet.extend(img_distances["DisNet"])
+        # distances_by_Zoe_depth.extend(img_distances["Zoe"])
+        # distances_by_MVDepthNet.extend(img_distances["MVDepthNet"])
+        # distances_by_DisNet.extend(img_distances["DisNet"])
 
         times_by_size.append(times["by_size"])
         times_by_classic_stereo.append(times["classic_stereo"])
-        times_by_Zoe_depth.append(times["Zoe"])
-        times_by_MVDepthNet.append(times["MVDepthNet"])
-        times_by_DisNet.append(times["DisNet"])
+        # times_by_Zoe_depth.append(times["Zoe"])
+        # times_by_MVDepthNet.append(times["MVDepthNet"])
+        # times_by_DisNet.append(times["DisNet"])
 
     print()
     print("real_distances:", real_distances)
@@ -147,9 +148,9 @@ if __name__ == "__main__":
     print("\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
     print("classic_size:", calculate_metrics(np.array(distances_by_size), np.array(real_distances)))
     print("classic_stereo:", calculate_metrics(np.array(distances_by_classic_stereo), np.array(real_distances)))
-    print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
-    print("DisNet:", calculate_metrics(np.array(distances_by_DisNet), np.array(real_distances)))
-    print("Zoe:", calculate_metrics(np.array(distances_by_Zoe_depth), np.array(real_distances)))
+    # print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
+    # print("DisNet:", calculate_metrics(np.array(distances_by_DisNet), np.array(real_distances)))
+    # print("Zoe:", calculate_metrics(np.array(distances_by_Zoe_depth), np.array(real_distances)))
 
     print()
     print("classic_size:", times_by_size)
@@ -161,6 +162,6 @@ if __name__ == "__main__":
     print("\t\t\tRuntime")
     print("classic_size:", runtime(np.array(times_by_size)))
     print("classic_stereo:", runtime(np.array(times_by_classic_stereo)))
-    print("MVDepthNet:", runtime(np.array(times_by_MVDepthNet)))
-    print("DisNet:", runtime(np.array(times_by_DisNet)))
-    print("Zoe:", runtime(np.array(times_by_Zoe_depth)))
+    # print("MVDepthNet:", runtime(np.array(times_by_MVDepthNet)))
+    # print("DisNet:", runtime(np.array(times_by_DisNet)))
+    # print("Zoe:", runtime(np.array(times_by_Zoe_depth)))

@@ -37,13 +37,16 @@ def distance_from_real_depth_map(real_depth_map_model, boxes, img_shape, velodyn
     distances = []
 
     for box in boxes:
-        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xyxy}")
 
-        x = box.xywh.round().int().tolist()[0][0]
-        y = box.xywh.round().int().tolist()[0][1]
-        d = depth_map[y][x]
+        x1 = box.xyxy.round().int().tolist()[0][0]
+        y1 = box.xyxy.round().int().tolist()[0][1]
+        x2 = box.xyxy.round().int().tolist()[0][2]
+        y2 = box.xyxy.round().int().tolist()[0][3]
 
-        print(d)
+        object_map = depth_map[y1:y2, x1:x2]
+        positive_values = object_map[object_map > 0]
+        d = np.min(positive_values) if positive_values.size > 0 else 0
 
         distances.append(d)
 
@@ -65,12 +68,16 @@ def distance_from_real_depth_map_2(real_depth_map_model, boxes, img_shape, velod
     distances = []
 
     for box in boxes:
-        x = box.tolist()[0] + (box.tolist()[2] - box.tolist()[0]) / 2
-        y = box.tolist()[1] + (box.tolist()[3] - box.tolist()[1]) / 2
+        print(f"Box: {box.xyxy}")
 
-        d = depth_map[int(y)][int(x)]
+        x1 = box.tolist()[0]
+        y1 = box.tolist()[1]
+        x2 = box.tolist()[2]
+        y2 = box.tolist()[3]
 
-        # print(d)
+        object_map = depth_map[y1:y2, x1:x2]
+        positive_values = object_map[object_map > 0]
+        d = np.min(positive_values) if positive_values.size > 0 else 0
 
         distances.append(d)
 

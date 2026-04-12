@@ -60,6 +60,6 @@ if __name__ == "__main__":
     print("yolo_with_depth:", calculate_metrics(np.array(distances_by_yolo_with_depth), np.array(real_distances)))
 
     print()
-    print("real_distances:", times)
+    print("yolo_with_depth:", times)
     print("\t\t\tRuntime")
     print("yolo_with_depth:", runtime(np.array(times)))
