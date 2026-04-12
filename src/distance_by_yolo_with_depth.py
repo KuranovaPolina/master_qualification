@@ -11,6 +11,8 @@ import tensorflow as tf
 import numpy as np
 import sys
 
+from PIL import Image
+
 from tensorflow.keras import backend as K
 from tensorflow_model_optimization.sparsity import keras as sparsity
 
@@ -133,3 +135,6 @@ class YOLO_np():
         else:
             out_boxes, out_classes, out_scores, out_distances = yolo3_postprocess_np(self.yolo_model.predict(image_data), image_shape, self.anchors, len(self.class_names), self.model_image_size, max_boxes=100, elim_grid_sense=self.elim_grid_sense)
         return out_boxes, out_classes, out_scores, out_distances
+    
+def distance_by_YOLO_with_depth(yolo_with_depth_model, img_path):
+    return yolo_with_depth_model.detect_image(Image.open(img_path))

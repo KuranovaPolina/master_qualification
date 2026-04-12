@@ -2,6 +2,8 @@ import torch
 
 from PIL import Image
 
+import matplotlib.pyplot as plt
+
 class DistanceByZoeDepth:   
     def __init__(self, model_type = "ZoeD_NK"):
         self.model = torch.hub.load("isl-org/ZoeDepth", model_type, pretrained=True)
@@ -17,10 +19,10 @@ class DistanceByZoeDepth:
 def distance_by_zoe_depth(zoe_depth_model, boxes, left_img_path):
     depth_map = zoe_depth_model.calculate_depth_map(left_img_path)
 
-    plt.figure(figsize=(10, 5))
-    plt.imshow(depth_map, cmap='flag')
-    plt.title("Zoe depth map")
-    plt.show()
+    # plt.figure(figsize=(10, 5))
+    # plt.imshow(depth_map, cmap='flag')
+    # plt.title("Zoe depth map")
+    # plt.show()
 
     distances = []
 

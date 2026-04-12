@@ -57,10 +57,10 @@ class DistanceByClassicStereo:
 def distance_by_classic_stereo(classic_stereo_model, boxes, calib, left_img_path, right_img_path):
     depth_map = classic_stereo_model.calculate_depth_map(left_img_path, right_img_path, calib)
 
-    plt.figure(figsize=(10, 5))
-    plt.imshow(depth_map, cmap='flag')
-    plt.title("Classic stereo depth map")
-    plt.show()
+    # plt.figure(figsize=(10, 5))
+    # plt.imshow(depth_map, cmap='flag')
+    # plt.title("Classic stereo depth map")
+    # plt.show()
 
     distances = []
 

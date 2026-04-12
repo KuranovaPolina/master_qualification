@@ -29,10 +29,10 @@ def distance_from_real_depth_map(real_depth_map_model, boxes, img_shape, velodyn
         grid_size = grid_size
     )
 
-    plt.figure(figsize=(10, 5))
-    plt.imshow(depth_map, cmap='flag')
-    plt.title("real depth map")
-    plt.show()
+    # plt.figure(figsize=(10, 5))
+    # plt.imshow(depth_map, cmap='flag')
+    # plt.title("real depth map")
+    # plt.show()
 
     distances = []
 
@@ -42,6 +42,33 @@ def distance_from_real_depth_map(real_depth_map_model, boxes, img_shape, velodyn
         x = box.xywh.round().int().tolist()[0][0]
         y = box.xywh.round().int().tolist()[0][1]
         d = depth_map[y][x]
+
+        print(d)
+
+        distances.append(d)
+
+    return distances
+
+def distance_from_real_depth_map_2(real_depth_map_model, boxes, img_shape, velodyne_file_path, calib, grid_size = 1):
+    depth_map = real_depth_map_model.get(
+        img_shape = img_shape, 
+        velodyne_file_path = velodyne_file_path, 
+        calib = calib, 
+        grid_size = grid_size
+    )
+
+    # plt.figure(figsize=(10, 5))
+    # plt.imshow(depth_map, cmap='flag')
+    # plt.title("real depth map")
+    # plt.show()
+
+    distances = []
+
+    for box in boxes:
+        x = box.tolist()[0] + (box.tolist()[2] - box.tolist()[0]) / 2
+        y = box.tolist()[1] + (box.tolist()[3] - box.tolist()[1]) / 2
+
+        d = depth_map[int(y)][int(x)]
 
         print(d)
 
