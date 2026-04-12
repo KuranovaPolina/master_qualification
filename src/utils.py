@@ -1,15 +1,14 @@
 import cv2
 import numpy as np
 
+from config import accurancy_threshold
+
 def absRel(pred: np.ndarray, gt: np.ndarray):
-    # Create mask for valid pixels (GT > 0 and finite values)
     mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
-    
-    # Extract valid values
+
     pred_valid = pred[mask]
     gt_valid = gt[mask]
     
-    # Check if we have enough valid pixels
     if len(gt_valid) == 0:
         return np.nan
 
@@ -18,14 +17,11 @@ def absRel(pred: np.ndarray, gt: np.ndarray):
     return abs_rel
 
 def RMSE(pred: np.ndarray, gt: np.ndarray):
-    # Create mask for valid pixels (GT > 0 and finite values)
     mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
     
-    # Extract valid values
     pred_valid = pred[mask]
     gt_valid = gt[mask]
     
-    # Check if we have enough valid pixels
     if len(gt_valid) == 0:
         return np.nan
 
@@ -34,14 +30,11 @@ def RMSE(pred: np.ndarray, gt: np.ndarray):
     return rmse
 
 def RMSE_log(pred: np.ndarray, gt: np.ndarray):
-    # Create mask for valid pixels (GT > 0 and finite values)
     mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
     
-    # Extract valid values
     pred_valid = pred[mask]
     gt_valid = gt[mask]
     
-    # Check if we have enough valid pixels
     if len(gt_valid) == 0:
         return np.nan
 
@@ -50,14 +43,11 @@ def RMSE_log(pred: np.ndarray, gt: np.ndarray):
     return rmse
 
 def sqRel(pred: np.ndarray, gt: np.ndarray):
-    # Create mask for valid pixels (GT > 0 and finite values)
     mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
     
-    # Extract valid values
     pred_valid = pred[mask]
     gt_valid = gt[mask]
     
-    # Check if we have enough valid pixels
     if len(gt_valid) == 0:
         return np.nan
     
@@ -65,13 +55,31 @@ def sqRel(pred: np.ndarray, gt: np.ndarray):
     
     return abs_rel
 
+def accurancy(pred: np.ndarray, gt: np.ndarray):
+    valid_mask = (gt > 0) & (pred > 0) & np.isfinite(gt) & np.isfinite(pred)
+    
+    pred_valid = pred[valid_mask]
+    gt_valid = gt[valid_mask]
+
+    if pred_valid.size == 0:
+        return 0.0
+
+    ratio = np.maximum((gt_valid / pred_valid), (pred_valid / gt_valid))
+    
+    accuracy_mask = ratio < accurancy_threshold
+    
+    accuracy = np.mean(accuracy_mask) * 100.0
+    
+    return accuracy
+
 def calculate_metrics(pred: np.ndarray, gt: np.ndarray):
     absRel_metrics = absRel(pred, gt)
     RMSE_metrics = RMSE(pred, gt)
     RMSE_log_metrics = RMSE_log(pred, gt)
     sqRel_metrics = sqRel(pred, gt)
+    accurancy_metrics = accurancy(pred, gt)
 
-    return absRel_metrics, RMSE_metrics, RMSE_log_metrics, sqRel_metrics
+    return absRel_metrics, RMSE_metrics, RMSE_log_metrics, sqRel_metrics, accurancy_metrics
 
 # From Github https://github.com/balcilar/DenseDepthMap
 def dense_map(Pts, n, m, grid):

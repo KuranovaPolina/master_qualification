@@ -119,7 +119,7 @@ if __name__ == "__main__":
     print("MVDepthNet:", distances_by_MVDepthNet)
     print("DisNet:", distances_by_DisNet)
 
-    print("\t\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel")
+    print("\t\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
     print("classic_size:", calculate_metrics(np.array(distances_by_size), np.array(real_distances)))
     print("classic_stereo:", calculate_metrics(np.array(distances_by_classic_stereo), np.array(real_distances)))
     print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
