@@ -15,7 +15,9 @@ from distance_by_zoe_depth import DistanceByZoeDepth, distance_by_zoe_depth
 from distance_by_MVDepthNet import DistanceByMVDepthNet, distance_by_MVDepthNet
 from distance_by_DisNet import DistanceByDisNet, distance_by_DisNet
 
-from utils import calculate_metrics
+from utils import calculate_metrics, runtime
+
+import time
 
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                         DistanceByClassicStereo_model = None, 
@@ -42,6 +44,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
     )
 
     distances = {}
+    times = {}
 
     img_shape = cv2.imread(left_img_path).shape
 
@@ -49,31 +52,40 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
     distances["real_distances"] = real_distances
 
-    distances_by_size = distance_by_size(boxes, calibration)
-    distances["by_size"] = distances_by_size
+    start = time.perf_counter()
+    distances["by_size"] = distance_by_size(boxes, calibration)
+    end = time.perf_counter()
+    times["by_size"] = end - start
 
     if DistanceByClassicStereo_model != None:
-        distances_by_classic_stereo = distance_by_classic_stereo(
+        start = time.perf_counter()
+        distances["classic_stereo"] = distance_by_classic_stereo(
             DistanceByClassicStereo_model, boxes, calibration, 
-            left_img_path = left_img_path,
-            right_img_path = right_img_path)
-        distances["classic_stereo"] = distances_by_classic_stereo
+            left_img_path = left_img_path, right_img_path = right_img_path)
+        end = time.perf_counter()
+        times["classic_stereo"] = end - start
 
     if DistanceByZoeDepth_model != None:
-        distances_by_Zoe_depth = distance_by_zoe_depth(DistanceByZoeDepth_model, boxes, left_img_path = left_img_path)
-        distances["Zoe"] = distances_by_Zoe_depth
+        start = time.perf_counter()
+        distances["Zoe"] = distance_by_zoe_depth(DistanceByZoeDepth_model, boxes, left_img_path = left_img_path)
+        end = time.perf_counter()
+        times["Zoe"] = end - start
 
     if DistanceByMVDepthNet_model != None:
-        distances_by_MVDepthNet = distance_by_MVDepthNet(
+        start = time.perf_counter()
+        distances["MVDepthNet"] = distance_by_MVDepthNet(
             DistanceByMVDepthNet_model, boxes, calibration, 
-            left_img_path = left_img_path,
-            right_img_path = right_img_path)
-        distances["MVDepthNet"] = distances_by_MVDepthNet
+            left_img_path = left_img_path, right_img_path = right_img_path)
+        end = time.perf_counter()
+        times["MVDepthNet"] = end - start
 
     if DisNet_model != None:
+        start = time.perf_counter()
         distances["DisNet"] = distance_by_DisNet(DisNet_model, boxes, img_shape)
+        end = time.perf_counter()
+        times["DisNet"] = end - start
 
-    return distances
+    return distances, times
 
 if __name__ == "__main__":
     # TODO: try get distanse in the middle of the object or get min value
@@ -93,8 +105,14 @@ if __name__ == "__main__":
     distances_by_MVDepthNet = []
     distances_by_DisNet = []
 
+    times_by_size = []
+    times_by_classic_stereo = []
+    # times_by_Zoe_depth = []
+    times_by_MVDepthNet = []
+    times_by_DisNet = []
+
     for cur_id in [0, 1, 2, 20]:
-        img_distances = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
+        img_distances, times = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
                             # DistanceByZoeDepth_model = DistanceByZoeDepth_model,
                             DistanceByMVDepthNet_model = DistanceByMVDepthNet_model,
@@ -112,6 +130,13 @@ if __name__ == "__main__":
         distances_by_MVDepthNet.extend(img_distances["MVDepthNet"])
         distances_by_DisNet.extend(img_distances["DisNet"])
 
+        times_by_size.append(times["by_size"])
+        times_by_classic_stereo.append(times["classic_stereo"])
+        # times_by_Zoe_depth.append(times["Zoe"])
+        times_by_MVDepthNet.append(times["MVDepthNet"])
+        times_by_DisNet.append(times["DisNet"])
+
+    print()
     print("real_distances:", real_distances)
     print("classic_size:", distances_by_size)
     print("classic_stereo:", distances_by_classic_stereo)
@@ -119,9 +144,23 @@ if __name__ == "__main__":
     print("MVDepthNet:", distances_by_MVDepthNet)
     print("DisNet:", distances_by_DisNet)
 
-    print("\t\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
+    print("\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
     print("classic_size:", calculate_metrics(np.array(distances_by_size), np.array(real_distances)))
     print("classic_stereo:", calculate_metrics(np.array(distances_by_classic_stereo), np.array(real_distances)))
     print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
     print("DisNet:", calculate_metrics(np.array(distances_by_DisNet), np.array(real_distances)))
     # print("Zoe:", calculate_metrics(np.array(distances_by_Zoe_depth), np.array(real_distances)))
+
+    print()
+    print("classic_size:", times_by_size)
+    print("classic_stereo:", times_by_classic_stereo)
+    # print("Zoe:", times_by_Zoe_depth)
+    print("MVDepthNet:", times_by_MVDepthNet)
+    print("DisNet:", times_by_DisNet)   
+
+    print("\t\t\tRuntime")
+    print("classic_size:", runtime(np.array(times_by_size)))
+    print("classic_stereo:", runtime(np.array(times_by_classic_stereo)))
+    print("MVDepthNet:", runtime(np.array(times_by_MVDepthNet)))
+    print("DisNet:", runtime(np.array(times_by_DisNet)))
+    # print("Zoe:", runtime(np.array(times_by_Zoe_depth)))

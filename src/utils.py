@@ -81,6 +81,9 @@ def calculate_metrics(pred: np.ndarray, gt: np.ndarray):
 
     return absRel_metrics, RMSE_metrics, RMSE_log_metrics, sqRel_metrics, accurancy_metrics
 
+def runtime(times: np.ndarray):
+    return 1 / np.mean(times)
+
 # From Github https://github.com/balcilar/DenseDepthMap
 def dense_map(Pts, n, m, grid):
     ng = 2 * grid + 1
