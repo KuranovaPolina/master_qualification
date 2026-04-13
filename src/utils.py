@@ -95,6 +95,20 @@ def calculate_metrics_by_dist(pred: np.ndarray, gt: np.ndarray, range_min = 0, r
 
     return res
 
+def calculate_metrics_by_luminosity(pred: np.ndarray, gt: np.ndarray, luminosity: np.ndarray, range_min = 0, range_max = 255, range_step = 50):
+    res = {}
+    for range_start in range(range_min, range_max, range_step):
+        valid_mask = (luminosity > range_start) & (luminosity <= (range_start + range_step)) & (gt > 0)
+
+        pred_valid = pred[valid_mask]
+        gt_valid = gt[valid_mask]
+
+        if pred_valid.size != 0:
+            metrics = calculate_metrics(pred_valid, gt_valid)
+            res[range_start] = {"start" : range_start, "end" : range_start + range_step, "metrics" : metrics}
+
+    return res
+
 def runtime(times: np.ndarray):
     return 1 / np.mean(times)
 

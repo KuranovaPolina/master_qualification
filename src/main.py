@@ -15,9 +15,29 @@ from distance_by_zoe_depth import DistanceByZoeDepth, distance_by_zoe_depth
 from distance_by_MVDepthNet import DistanceByMVDepthNet, distance_by_MVDepthNet
 from distance_by_DisNet import DistanceByDisNet, distance_by_DisNet
 
-from utils import calculate_metrics, runtime, calculate_metrics_by_dist
+from utils import calculate_metrics, runtime, calculate_metrics_by_dist, calculate_metrics_by_luminosity
 
 import time
+
+def get_luminosity_by_LAB(img_path, boxes):
+    img_bgr = cv2.imread(img_path)
+    img_lab = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2LAB)
+    L_channel = img_lab[:, :, 0]
+
+    luminosities = []
+
+    for box in boxes:
+        print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xyxy}")
+
+        x1 = box.xyxy.round().int().tolist()[0][0]
+        y1 = box.xyxy.round().int().tolist()[0][1]
+        x2 = box.xyxy.round().int().tolist()[0][2]
+        y2 = box.xyxy.round().int().tolist()[0][3]
+
+        luminosities.append(np.mean(L_channel[y1:y2, x1:x2]))
+
+    return luminosities
+
 
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                         DistanceByClassicStereo_model = None, 
@@ -44,6 +64,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
 
     distances = {}
     times = {}
+    luminosity = get_luminosity_by_LAB(left_img_path, boxes)
 
     img_shape = cv2.imread(left_img_path).shape
 
@@ -84,7 +105,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         end = time.perf_counter()
         times["DisNet"] = end - start
 
-    return distances, times
+    return distances, times, luminosity
 
 if __name__ == "__main__":
     # TODO: try get distanse in the middle of the object or get min value
@@ -96,6 +117,8 @@ if __name__ == "__main__":
     # DistanceByZoeDepth_model = DistanceByZoeDepth("ZoeD_NK")
     # DistanceByMVDepthNet_model = DistanceByMVDepthNet(model_path = 'model/opensource_model.pth.tar') 
     # DisNet_model = DistanceByDisNet("model/best_disnet_model.keras")
+
+    luminosities = []
 
     real_distances = []
     distances_by_size = []
@@ -111,7 +134,7 @@ if __name__ == "__main__":
     times_by_DisNet = []
 
     for cur_id in [0, 1, 2, 20]:
-        img_distances, times = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
+        img_distances, times, luminosity = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
                             # DistanceByZoeDepth_model = DistanceByZoeDepth_model,
                             # DistanceByMVDepthNet_model = DistanceByMVDepthNet_model,
@@ -123,6 +146,8 @@ if __name__ == "__main__":
                             # ,
                             # grid_size = 5
                             )
+        
+        luminosities.extend(luminosity)
         
         real_distances.extend(img_distances["real_distances"])
         distances_by_size.extend(img_distances["by_size"])
@@ -136,6 +161,8 @@ if __name__ == "__main__":
         # times_by_Zoe_depth.append(times["Zoe"])
         # times_by_MVDepthNet.append(times["MVDepthNet"])
         # times_by_DisNet.append(times["DisNet"])
+
+    print("-----\nluminosity: ", luminosities)
 
     print()
     print("real_distances:", real_distances)
@@ -155,9 +182,16 @@ if __name__ == "__main__":
     print("\n\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
     print("classic_size:", calculate_metrics_by_dist(np.array(distances_by_size), np.array(real_distances)))
     print("classic_stereo:", calculate_metrics_by_dist(np.array(distances_by_classic_stereo), np.array(real_distances)))
-    # print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
-    # print("DisNet:", calculate_metrics(np.array(distances_by_DisNet), np.array(real_distances)))
-    # print("Zoe:", calculate_metrics(np.array(distances_by_Zoe_depth), np.array(real_distances)))
+    # print("MVDepthNet:", calculate_metrics_by_dist(np.array(distances_by_MVDepthNet), np.array(real_distances)))
+    # print("DisNet:", calculate_metrics_by_dist(np.array(distances_by_DisNet), np.array(real_distances)))
+    # print("Zoe:", calculate_metrics_by_dist(np.array(distances_by_Zoe_depth), np.array(real_distances)))
+
+    print("\n\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
+    print("classic_size:", calculate_metrics_by_luminosity(np.array(distances_by_size), np.array(real_distances), np.array(luminosities)))
+    print("classic_stereo:", calculate_metrics_by_luminosity(np.array(distances_by_classic_stereo), np.array(real_distances), np.array(luminosities)))
+    # print("MVDepthNet:", calculate_metrics_by_luminosity(np.array(distances_by_MVDepthNet), np.array(real_distances), np.array(luminosities)))
+    # print("DisNet:", calculate_metrics_by_luminosity(np.array(distances_by_DisNet), np.array(real_distances), np.array(luminosities)))
+    # print("Zoe:", calculate_metrics_by_luminosity(np.array(distances_by_Zoe_depth), np.array(real_distances), np.array(luminosities)))
 
     print()
     print("classic_size:", times_by_size)
