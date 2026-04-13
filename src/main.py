@@ -15,7 +15,7 @@ from distance_by_zoe_depth import DistanceByZoeDepth, distance_by_zoe_depth
 from distance_by_MVDepthNet import DistanceByMVDepthNet, distance_by_MVDepthNet
 from distance_by_DisNet import DistanceByDisNet, distance_by_DisNet
 
-from utils import calculate_metrics, runtime
+from utils import calculate_metrics, runtime, calculate_metrics_by_dist
 
 import time
 
@@ -148,6 +148,13 @@ if __name__ == "__main__":
     print("\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
     print("classic_size:", calculate_metrics(np.array(distances_by_size), np.array(real_distances)))
     print("classic_stereo:", calculate_metrics(np.array(distances_by_classic_stereo), np.array(real_distances)))
+    # print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
+    # print("DisNet:", calculate_metrics(np.array(distances_by_DisNet), np.array(real_distances)))
+    # print("Zoe:", calculate_metrics(np.array(distances_by_Zoe_depth), np.array(real_distances)))
+
+    print("\n\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
+    print("classic_size:", calculate_metrics_by_dist(np.array(distances_by_size), np.array(real_distances)))
+    print("classic_stereo:", calculate_metrics_by_dist(np.array(distances_by_classic_stereo), np.array(real_distances)))
     # print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
     # print("DisNet:", calculate_metrics(np.array(distances_by_DisNet), np.array(real_distances)))
     # print("Zoe:", calculate_metrics(np.array(distances_by_Zoe_depth), np.array(real_distances)))
