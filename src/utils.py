@@ -95,19 +95,23 @@ def calculate_metrics_by_dist(pred: np.ndarray, gt: np.ndarray, range_min = 0, r
 
     return res
 
-def calculate_metrics_by_luminosity(pred: np.ndarray, gt: np.ndarray, luminosity: np.ndarray, range_min = 0, range_max = 255, range_step = 50):
-    res = {}
-    for range_start in range(range_min, range_max, range_step):
-        valid_mask = (luminosity > range_start) & (luminosity <= (range_start + range_step)) & (gt > 0)
+def calculate_metrics_by_luminosity(pred: np.ndarray, gt: np.ndarray, luminosity: np.ndarray, middle_min = 127, middle_max = 128):
+    low_lum_mask = luminosity < middle_min
+    pred_low = pred[low_lum_mask]
+    gt_low = gt[low_lum_mask]
+    metrics_low = calculate_metrics(pred_low, gt_low) if pred_low.size != 0 else None
 
-        pred_valid = pred[valid_mask]
-        gt_valid = gt[valid_mask]
+    middle_lum_mask = (luminosity >= middle_min) & (luminosity < middle_max)
+    pred_middle = pred[middle_lum_mask]
+    gt_middle = gt[middle_lum_mask]
+    metrics_middle = calculate_metrics(pred_middle, gt_middle) if pred_middle.size != 0 else None
 
-        if pred_valid.size != 0:
-            metrics = calculate_metrics(pred_valid, gt_valid)
-            res[range_start] = {"start" : range_start, "end" : range_start + range_step, "metrics" : metrics}
+    max_lum_mask = (luminosity >= middle_max)
+    pred_max = pred[max_lum_mask]
+    gt_max = gt[max_lum_mask]
+    metrics_max = calculate_metrics(pred_max, gt_max) if pred_max.size != 0 else None
 
-    return res
+    return metrics_low, metrics_middle, metrics_max
 
 def runtime(times: np.ndarray):
     return 1 / np.mean(times)
