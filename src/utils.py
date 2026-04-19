@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from config import accurancy_threshold
 
@@ -113,8 +114,49 @@ def calculate_metrics_by_luminosity(pred: np.ndarray, gt: np.ndarray, luminosity
 
     return metrics_low, metrics_middle, metrics_max
 
-def runtime(times: np.ndarray):
-    return 1 / np.mean(times)
+def get_runtime(times: np.ndarray):
+    runtime = np.mean(times)
+    return runtime, 1 / runtime
+
+import json
+import os
+
+def plot_metric(metrics_values, x_labels, name, color = "#2E86AB", save_dir = "metrics_plots"):
+    plt.figure(figsize=(10, 5), dpi=100)
+    bars = plt.bar(x_labels, metrics_values, color=color, edgecolor='black', alpha=0.9)
+    
+    # Подписи значений над столбцами
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, height, f"{height:.2f}", 
+                 ha='center', va='bottom', fontsize=9, rotation=45)
+    
+    plt.title(f"Метрика {name}", fontsize=14, fontweight='bold')
+    plt.xlabel("Дистанция, м", fontsize=11)
+    plt.ylabel(f"{name}", fontsize=11)
+    plt.grid(axis='y', linestyle='--', alpha=0.5)
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
+    os.makedirs(save_dir, exist_ok=True)
+    filename = f"{save_dir}/{name.lower()}_plot.png"
+    plt.savefig(filename, dpi=100, bbox_inches='tight')
+    plt.close()
+
+def draw_metrics(metrics):
+    sorted_keys = sorted(metrics.keys(), key=lambda k: metrics[k]["start"])
+    x_labels = [f"{metrics[k]['start']}-{metrics[k]['end']}" for k in sorted_keys]
+
+    metrics_values = [[] for _ in range(5)]
+    for k in sorted_keys:
+        for i, val in enumerate(metrics[k]["metrics"]):
+            metrics_values[i].append(val)
+
+    plot_metric(metrics_values[0], x_labels, "AbsRel")
+    plot_metric(metrics_values[1], x_labels, "RMSE")
+    plot_metric(metrics_values[2], x_labels, "RMSE_log")
+    plot_metric(metrics_values[3], x_labels, "SqRel")
+    plot_metric(metrics_values[4], x_labels, "Accuracy")
 
 # From Github https://github.com/balcilar/DenseDepthMap
 def dense_map(Pts, n, m, grid):

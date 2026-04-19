@@ -16,9 +16,11 @@ from distance_by_zoe_depth import DistanceByZoeDepth, distance_by_zoe_depth
 from distance_by_MVDepthNet import DistanceByMVDepthNet, distance_by_MVDepthNet
 from distance_by_DisNet import DistanceByDisNet, distance_by_DisNet
 
-from utils import calculate_metrics, runtime, calculate_metrics_by_dist, calculate_metrics_by_luminosity
+from utils import calculate_metrics, get_runtime, calculate_metrics_by_dist, calculate_metrics_by_luminosity
 
 import time
+
+from config import classes_config_classic_size
 
 
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
@@ -41,7 +43,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         image_path = left_img_path,
         model = YOLO_model,
         save_path = os.path.join("detection", "%06d.png" % cur_id),
-        TARGET_CLASSES = {0: 'person', 2: 'car'}
+        target_classes = {0: 'person', 2: 'car'}
     )
 
     distances = {}
@@ -54,8 +56,10 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
     distances["real_distances"] = real_distances
 
+    DistanceBySize_model = DistanceBySize(classes_config_classic_size)
+
     start = time.perf_counter()
-    distances["by_size"] = distance_by_size(boxes, calibration)
+    distances["by_size"] = distance_by_size(DistanceBySize_model, boxes, calibration)
     end = time.perf_counter()
     times["by_size"] = end - start
 
@@ -183,8 +187,8 @@ if __name__ == "__main__":
     # print("DisNet:", times_by_DisNet)   
 
     print("\t\t\tRuntime")
-    print("classic_size:", runtime(np.array(times_by_size)))
-    # print("classic_stereo:", runtime(np.array(times_by_classic_stereo)))
-    # print("MVDepthNet:", runtime(np.array(times_by_MVDepthNet)))
-    # print("DisNet:", runtime(np.array(times_by_DisNet)))
-    # print("Zoe:", runtime(np.array(times_by_Zoe_depth)))
+    print("classic_size:", get_runtime(np.array(times_by_size)))
+    # print("classic_stereo:", get_runtime(np.array(times_by_classic_stereo)))
+    # print("MVDepthNet:", get_runtime(np.array(times_by_MVDepthNet)))
+    # print("DisNet:", get_runtime(np.array(times_by_DisNet)))
+    # print("Zoe:", get_runtime(np.array(times_by_Zoe_depth)))

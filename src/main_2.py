@@ -6,7 +6,7 @@ from calib import Calibration
 from real_depth_map import DepthMap, distance_from_real_depth_map_2
 from distance_by_yolo_with_depth import YOLO_np, distance_by_YOLO_with_depth
 
-from utils import calculate_metrics, runtime
+from utils import calculate_metrics, get_runtime
 
 import time
 
@@ -62,4 +62,4 @@ if __name__ == "__main__":
     print()
     print("yolo_with_depth:", times)
     print("\t\t\tRuntime")
-    print("yolo_with_depth:", runtime(np.array(times)))
+    print("yolo_with_depth:", get_runtime(np.array(times)))

@@ -1,47 +1,41 @@
 import cv2
 
-class ObjectType:
-    def __init__(self, index, base_size_type, base_size):
-        self.index = index # 0 / 2
-        self.base_size_type = base_size_type # 0 - w, 1 - h
-        self.base_size = base_size # int
-    
-    def print(self):
-        print(f"Class: {self.index}, Type: {self.base_size_type}, Size: {self.base_size}")
+def object_config_print(object_config):
+    print(f"Class: {object_config["class_name"]}, \
+            Distance by: {object_config["distance_by"]}, \
+            Width: {object_config["class_w"]}, \
+            Height: {object_config["class_h"]}, \
+            D...: {object_config["class_d"]}")
 
 class DistanceBySize:    
-    def __init__(self, calib, object_types = {0: ObjectType(0, 1, 1.8), 2: ObjectType(2, 1, 1.4)}):
-        K = self.decomposeProjectionMatrix(calib.P0)
-        
-        self.fx = K[0][0]
-        self.fy = K[1][1]
-        self.object_types = object_types
+    def __init__(self, objects_config):
+        self.objects_config = objects_config
 
-    def decomposeProjectionMatrix(self, P):
-        K, _, _, _, _, _, _ = cv2.decomposeProjectionMatrix(P)
+    def getCalibParams(self, calib):
+        K, _, _, _, _, _, _ = cv2.decomposeProjectionMatrix(calib.P0)
 
-        return K
+        return K[0][0], K[1][1]
     
-    def calculate(self, box):
-        object_type = self.object_types[box.cls.item()]
-        object_type.print()
+    def calculate(self, box, calib):
+        object_config = self.objects_config[box.cls.item()]
+        object_config_print(object_config)
 
-        if object_type.base_size_type == 0:
-            return self.fx * object_type.base_size / (box.xywh[0][2].item())
-        elif object_type.base_size_type == 1:
-            return self.fy * object_type.base_size / (box.xywh[0][3].item())
+        fx, fy = self.getCalibParams(calib)
+
+        if object_config["distance_by"] == 'w':
+            return fx * object_config["class_w"] / (box.xywh[0][2].item())
+        elif object_config["distance_by"] == 'h':
+            return fy * object_config["class_h"] / (box.xywh[0][3].item())
         else:
-            return 0
+            return None
 
-def distance_by_size(boxes, calib):
-    distanceByHeight = DistanceBySize(calib)
-
+def distance_by_size(DistanceBySize_model, boxes, calib):
     distances = []
 
     for box in boxes:
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
-        d = distanceByHeight.calculate(box)
+        d = DistanceBySize_model.calculate(box, calib)
         # print(d)
         distances.append(d)
 
