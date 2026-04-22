@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-from config import accurancy_threshold
+from config import accurancy_threshold, accurancy_threshold_2, accurancy_threshold_3, distance_range_min, distance_range_max, distance_range_step, luminosity_middle_min, luminosity_middle_max
 
 def absRel(pred: np.ndarray, gt: np.ndarray):
     mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
@@ -68,21 +68,29 @@ def accurancy(pred: np.ndarray, gt: np.ndarray):
     ratio = np.maximum((gt_valid / pred_valid), (pred_valid / gt_valid))
     
     accuracy_mask = ratio < accurancy_threshold
-    
     accuracy = np.mean(accuracy_mask) * 100.0
+
+    accuracy_mask = ratio < accurancy_threshold_2
+    accuracy_2 = np.mean(accuracy_mask) * 100.0
+
+    accuracy_mask = ratio < accurancy_threshold_3
+    accuracy_3 = np.mean(accuracy_mask) * 100.0
     
-    return accuracy
+    return accuracy, accuracy_2, accuracy_3
 
 def calculate_metrics(pred: np.ndarray, gt: np.ndarray):
     absRel_metrics = absRel(pred, gt)
     RMSE_metrics = RMSE(pred, gt)
     RMSE_log_metrics = RMSE_log(pred, gt)
     sqRel_metrics = sqRel(pred, gt)
-    accurancy_metrics = accurancy(pred, gt)
+    accurancy_1, accurancy_2, accurancy_3 = accurancy(pred, gt)
 
-    return absRel_metrics, RMSE_metrics, RMSE_log_metrics, sqRel_metrics, accurancy_metrics
+    return absRel_metrics, RMSE_metrics, RMSE_log_metrics, sqRel_metrics, accurancy_1, accurancy_2, accurancy_3
 
-def calculate_metrics_by_dist(pred: np.ndarray, gt: np.ndarray, range_min = 0, range_max = 90, range_step = 5):
+def calculate_metrics_by_dist(pred: np.ndarray, gt: np.ndarray, 
+                                    range_min = distance_range_min, 
+                                    range_max = distance_range_max, 
+                                    range_step = distance_range_step):
     res = {}
     for range_start in range(range_min, range_max, range_step):
         valid_mask = (gt > range_start) & (gt <= (range_start + range_step))
@@ -96,7 +104,9 @@ def calculate_metrics_by_dist(pred: np.ndarray, gt: np.ndarray, range_min = 0, r
 
     return res
 
-def calculate_metrics_by_luminosity(pred: np.ndarray, gt: np.ndarray, luminosity: np.ndarray, middle_min = 127, middle_max = 128):
+def calculate_metrics_by_luminosity(pred: np.ndarray, gt: np.ndarray, luminosity: np.ndarray, 
+                                        middle_min = luminosity_middle_min, 
+                                        middle_max = luminosity_middle_max):
     low_lum_mask = luminosity < middle_min
     pred_low = pred[low_lum_mask]
     gt_low = gt[low_lum_mask]
@@ -147,7 +157,7 @@ def draw_metrics(metrics):
     sorted_keys = sorted(metrics.keys(), key=lambda k: metrics[k]["start"])
     x_labels = [f"{metrics[k]['start']}-{metrics[k]['end']}" for k in sorted_keys]
 
-    metrics_values = [[] for _ in range(5)]
+    metrics_values = [[] for _ in range(7)]
     for k in sorted_keys:
         for i, val in enumerate(metrics[k]["metrics"]):
             metrics_values[i].append(val)
@@ -156,7 +166,9 @@ def draw_metrics(metrics):
     plot_metric(metrics_values[1], x_labels, "RMSE")
     plot_metric(metrics_values[2], x_labels, "RMSE_log")
     plot_metric(metrics_values[3], x_labels, "SqRel")
-    plot_metric(metrics_values[4], x_labels, "Accuracy")
+    plot_metric(metrics_values[4], x_labels, "Accuracy 1.25")
+    plot_metric(metrics_values[5], x_labels, "Accuracy 1.25^2")
+    plot_metric(metrics_values[6], x_labels, "Accuracy 1.25^3")
 
 # From Github https://github.com/balcilar/DenseDepthMap
 def dense_map(Pts, n, m, grid):

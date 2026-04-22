@@ -20,7 +20,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model, DistanceBySize_model
                         calib_data_folder = 'test_data/calib', 
                         velodyne_data_folder = 'test_data/velodyne', 
                         grid_size = 1, 
-                        target_classes = {0: 'person', 2: 'car'}):
+                        target_classes = classes_config_classic_size):
     img_path = os.path.join(img_data_folder, "%06d.png" % cur_id)
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
     velodyne_file_path = os.path.join(velodyne_data_folder, "%06d.bin" % cur_id)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     runtimes = []
 
-    for cur_id in range(101):
+    for cur_id in range(5):
         img_distances_by_size, img_real_distances, img_luminosities, runtime = calculate_one_image(
             cur_id, YOLO_model, DepthMap_model, DistanceBySize_model,
             img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2',
@@ -93,9 +93,7 @@ if __name__ == "__main__":
     runtime, fps = get_runtime(np.array(runtimes))
     print("classic_size:", (runtime, fps))
 
-    annotations = {}
-
-    annotations["classic_size"] = {
+    annotations = {
         "all_metrics": metrics,
         "metrics_by_dist": metrics_by_dist,
         "metrics_low_lum": metrics_by_lum[0],
