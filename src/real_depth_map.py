@@ -68,7 +68,7 @@ def distance_from_real_depth_map_2(real_depth_map_model, boxes, img_shape, velod
     distances = []
 
     for box in boxes:
-        print(f"Box: {box.xyxy}")
+        print(f"Box: {box}")
 
         x1 = box.tolist()[0]
         y1 = box.tolist()[1]
