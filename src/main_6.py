@@ -9,14 +9,12 @@ from calib import Calibration
 from real_depth_map import DepthMap, distance_from_real_depth_map
 from get_luminosity import get_luminosity
 from detect import detect_and_save
-from distance_by_classic_stereo import DistanceByClassicStereo, distance_by_classic_stereo
 from distance_by_MVDepthNet import DistanceByMVDepthNet, distance_by_MVDepthNet
 
 from utils import calculate_metrics, get_runtime, calculate_metrics_by_dist, calculate_metrics_by_luminosity
 
 
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
-                        DistanceByClassicStereo_model = None, 
                         DistanceByMVDepthNet_model = None, 
                         left_img_data_folder = 'test_data/left', 
                         right_img_data_folder = 'test_data/right', 
@@ -46,14 +44,6 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
     distances["real_distances"] = real_distances
 
-    if DistanceByClassicStereo_model != None:
-        start = time.perf_counter()
-        distances["classic_stereo"] = distance_by_classic_stereo(
-            DistanceByClassicStereo_model, boxes, calibration, 
-            left_img_path = left_img_path, right_img_path = right_img_path)
-        end = time.perf_counter()
-        times["classic_stereo"] = end - start
-
     if DistanceByMVDepthNet_model != None:
         start = time.perf_counter()
         distances["MVDepthNet"] = distance_by_MVDepthNet(
@@ -70,7 +60,6 @@ if __name__ == "__main__":
 
     YOLO_model = YOLO('model/yolo26m.pt')
     DepthMap_model = DepthMap()
-    # DistanceByClassicStereo_model = DistanceByClassicStereo()
     # DistanceByMVDepthNet_model = DistanceByMVDepthNet(model_path = 'model/opensource_model.pth.tar') 
 
     luminosities = []
@@ -84,7 +73,6 @@ if __name__ == "__main__":
 
     for cur_id in range(10):
         img_distances, times, luminosity = calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
-                            # DistanceByClassicStereo_model = DistanceByClassicStereo_model, 
                             # DistanceByMVDepthNet_model = DistanceByMVDepthNet_model,
                             left_img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2', 
                             right_img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_3/testing/image_3', 
@@ -97,35 +85,27 @@ if __name__ == "__main__":
         luminosities.extend(luminosity)
         
         real_distances.extend(img_distances["real_distances"])
-        # distances_by_classic_stereo.extend(img_distances["classic_stereo"])
         # distances_by_MVDepthNet.extend(img_distances["MVDepthNet"])
 
-        # times_by_classic_stereo.append(times["classic_stereo"])
         # times_by_MVDepthNet.append(times["MVDepthNet"])
 
     print("-----\nluminosity: ", luminosities)
 
     print()
     # print("real_distances:", real_distances)
-    # print("classic_stereo:", distances_by_classic_stereo)
     # print("MVDepthNet:", distances_by_MVDepthNet)
 
     print("\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
-    # print("classic_stereo:", calculate_metrics(np.array(distances_by_classic_stereo), np.array(real_distances)))
     # print("MVDepthNet:", calculate_metrics(np.array(distances_by_MVDepthNet), np.array(real_distances)))
 
     print("\n\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
-    # print("classic_stereo:", calculate_metrics_by_dist(np.array(distances_by_classic_stereo), np.array(real_distances)))
     # print("MVDepthNet:", calculate_metrics_by_dist(np.array(distances_by_MVDepthNet), np.array(real_distances)))
 
     print("\n\t\t\tAbsRel\t\tRMSE\t\tRMSE_log\t\tSqRel\t\tAccurancy")
-    # print("classic_stereo:", calculate_metrics_by_luminosity(np.array(distances_by_classic_stereo), np.array(real_distances), np.array(luminosities)))
     # print("MVDepthNet:", calculate_metrics_by_luminosity(np.array(distances_by_MVDepthNet), np.array(real_distances), np.array(luminosities)))
   
     print()
-    # print("classic_stereo:", times_by_classic_stereo)
     # print("MVDepthNet:", times_by_MVDepthNet)
 
     print("\t\t\tRuntime")
-    # print("classic_stereo:", get_runtime(np.array(times_by_classic_stereo)))
     # print("MVDepthNet:", get_runtime(np.array(times_by_MVDepthNet)))
