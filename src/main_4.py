@@ -32,7 +32,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         target_classes = {0: 'person', 2: 'car'}
     )
 
-    luminosity = get_luminosity(img_path, boxes)
+    luminosities = get_luminosity(img_path, boxes)
 
     img_shape = cv2.imread(img_path).shape
 
