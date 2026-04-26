@@ -1,7 +1,6 @@
 classes_config = {
-    0: {"class_name": "person", "class_w_sm": 55, "class_h_sm": 175, "class_d_sm": 30},
-    # 1: {"class_name": "bicycle", "class_w_sm": 30, "class_h_sm": 30, "class_d_sm": 30},
-    2: {"class_name": "car", "class_w_sm": 160, "class_h_sm": 180, "class_d_sm": 400}
+    0: {"class_name": "person", "class_w": 0.55, "class_h": 1.75, "class_d": 0.30},
+    2: {"class_name": "car", "class_w": 1.6, "class_h": 1.80, "class_d": 4.00}
 }
 
 classes_config_classic_size = {

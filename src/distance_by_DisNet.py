@@ -26,11 +26,11 @@ class DistanceByDisNet:
         width = (box.xywh.tolist()[0][2] / img_shape[1])
         height = (box.xywh.tolist()[0][3] / img_shape[0])
         diagonal = np.sqrt(np.square(width) + np.square(height))
-        class_h_sm = classes_config[int(box.cls.item())]["class_h_sm"]
-        class_w_sm = classes_config[int(box.cls.item())]["class_w_sm"]
-        class_d_sm = classes_config[int(box.cls.item())]["class_d_sm"]
+        class_h = classes_config[int(box.cls.item())]["class_h"]
+        class_w = classes_config[int(box.cls.item())]["class_w"]
+        class_d = classes_config[int(box.cls.item())]["class_d"]
 
-        return np.array([[1 / width, 1 / height, 1 / diagonal, class_h_sm, class_w_sm, class_d_sm]])
+        return np.array([[1 / width, 1 / height, 1 / diagonal, class_h, class_w, class_d]])
 
     def predict(self, box, img_shape):
         return self.model.predict(self.get_X_from_box(box, img_shape))[0][0]

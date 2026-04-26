@@ -44,9 +44,9 @@ def collect_dataset_for_DisNet(real_depth_map_model, boxes, img_shape, velodyne_
             "width": w,
             "img_height": img_shape[0],
             "img_width": img_shape[1],
-            "size_d": classes_config[int(box.cls.item())]["class_d_sm"],
-            "size_h": classes_config[int(box.cls.item())]["class_h_sm"],
-            "size_w": classes_config[int(box.cls.item())]["class_w_sm"],
+            "size_d": classes_config[int(box.cls.item())]["class_d"],
+            "size_h": classes_config[int(box.cls.item())]["class_h"],
+            "size_w": classes_config[int(box.cls.item())]["class_w"],
             "name": f"{img_id}.png"
         }
 
@@ -61,6 +61,8 @@ def collect_dataset_for_DisNet(real_depth_map_model, boxes, img_shape, velodyne_
         json.dump(annotations, f, indent=4, ensure_ascii=False)
 
 
+from pathlib import Path
+
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                         img_data_folder = 'test_data/left', 
                         calib_data_folder = 'test_data/calib', 
@@ -68,6 +70,12 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         output_folder = 'test_data/velodyne',
                         grid_size = 10):
     img_path = os.path.join(img_data_folder, "%06d.png" % cur_id)
+
+    if not Path(img_path).exists():
+        with open("missing_images.txt", "a") as f:
+            f.write(f"{cur_id}\n")
+        return
+
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
     velodyne_file_path = os.path.join(velodyne_data_folder, "%06d.bin" % cur_id)
 
@@ -86,13 +94,13 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
 
 
 if __name__ == "__main__":
-    YOLO_model = YOLO('model/yolo26n.pt')
+    YOLO_model = YOLO('model/yolo26m.pt')
     DepthMap_model = DepthMap()
 
-    for cur_id in range(100):
+    for cur_id in range(1000, 2000):
         calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/training/image_2', 
                             calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/training/calib', 
                             velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/training/velodyne',
-                            output_folder = '../kitti_dataset_convert',
+                            output_folder = '../kitti_dataset_convert_config_1',
                             grid_size = 5)
