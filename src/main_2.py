@@ -38,7 +38,10 @@ def calculate_one_image(yolo_with_depth_model, DepthMap_model, cur_id, img_data_
     return distances_by_YOLO_with_depth, real_distances, luminosities, runtime
 
 if __name__ == "__main__":
-    YOLO_np_model = YOLO_np()
+    YOLO_np_model = YOLO_np(classes_path = "model/configs/kitty_all_except_nodata.txt", 
+                        anchors_path = "model/configs/yolo3_anchors.txt",
+                        weights_path = "model/ep043-dump.h5", 
+                        classes = [0, 1])
     DepthMap_model = DepthMap()
 
     real_distances = []
@@ -46,9 +49,11 @@ if __name__ == "__main__":
     luminosities = []
     runtimes = []
 
-    for cur_id in [0, 1, 2, 20]:
+    for cur_id in range(20):
         img_distances_by_YOLO_with_depth, img_real_distances, img_luminosities, runtime = calculate_one_image(YOLO_np_model, DepthMap_model, cur_id, 
-                                        'test_data/left', 'test_data/calib', 'test_data/velodyne')
+            img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2',
+            calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/testing/calib', 
+            velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/testing/velodyne')
 
         real_distances.extend(img_real_distances)
         distances_by_yolo_with_depth.extend(img_distances_by_YOLO_with_depth)

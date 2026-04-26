@@ -58,13 +58,16 @@ def draw_boxes(image, boxes, classes, scores, distances, class_names, colors):
 
 
 class YOLO_np():
-    def __init__(self):
-        self.class_names = get_classes("model/configs/kitty_all_except_nodata.txt")
-        self.anchors = get_anchors("model/configs/yolo3_anchors.txt")
+    def __init__(self, classes_path = "model/configs/kitty_all_except_nodata.txt", 
+                        anchors_path = "model/configs/yolo3_anchors.txt",
+                        weights_path = "model/ep043-dump.h5", 
+                        classes = None):
+        self.class_names = get_classes(classes_path)
+        self.anchors = get_anchors(anchors_path)
         self.colors = get_colors(self.class_names)
 
         self.model_type = "yolo3_xception"
-        self.weights_path = "model/ep043-dump.h5"
+        self.weights_path = weights_path
 
         self.pruning_model = False
         self.elim_grid_sense = False
@@ -73,6 +76,8 @@ class YOLO_np():
         assert (self.model_image_size[0]%32 == 0 and self.model_image_size[1]%32 == 0), 'model_image_size should be multiples of 32'
 
         self.yolo_model = self._generate_model()
+
+        self.classes = classes
 
     def _generate_model(self):
         '''to generate the bounding boxes'''
@@ -115,6 +120,11 @@ class YOLO_np():
         
         start = time.time()
         out_boxes, out_classes, out_scores, out_distances = self.predict(image_data, image_shape)
+
+        if self.classes and len(out_boxes):
+            valid_mask = np.isin(out_classes, self.classes)
+            out_boxes, out_classes, out_scores, out_distances = out_boxes[valid_mask], out_classes[valid_mask], out_scores[valid_mask], out_distances[valid_mask]
+
         print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
         print(out_boxes, out_classes, out_scores, out_distances)
         end = time.time()
