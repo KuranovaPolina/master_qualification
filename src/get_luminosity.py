@@ -31,3 +31,20 @@ def get_luminosity(img_path, boxes):
         luminosities.append(analyze_illumination(img_bgr[y1:y2, x1:x2]))
 
     return luminosities
+
+def get_luminosity_2(img_path, boxes):
+    img_bgr = cv2.imread(img_path)
+
+    luminosities = []
+
+    for box in boxes:
+        print(f"Box: {box}")
+
+        x1 = box.tolist()[0]
+        y1 = box.tolist()[1]
+        x2 = box.tolist()[2]
+        y2 = box.tolist()[3]
+
+        luminosities.append(analyze_illumination(img_bgr[y1:y2, x1:x2]))
+
+    return luminosities
