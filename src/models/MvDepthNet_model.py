@@ -130,15 +130,25 @@ class depthNet(nn.Module):
         idepth_base = 1.0 / 50.0
         idepth_step = (1.0 / 0.5 - 1.0 / 50.0) / 63.0
 
-        costvolume = Variable(
-            torch.FloatTensor(left_image.shape[0], 64,
-                                   left_image.shape[2], left_image.shape[3]))
+        device = left_image.device
+
+        if device.type == 'cuda':
+            costvolume = Variable(
+                torch.cuda.FloatTensor(left_image.shape[0], 64,
+                                    left_image.shape[2], left_image.shape[3]))
+        else:
+            costvolume = Variable(
+                torch.FloatTensor(left_image.shape[0], 64,
+                                    left_image.shape[2], left_image.shape[3]))
         image_height = 256
         image_width = 320
         batch_number = left_image.shape[0]
 
-        normalize_base = torch.FloatTensor(
-            [image_width / 2.0, image_height / 2.0])
+        if device.type == 'cuda':
+            normalize_base = torch.cuda.FloatTensor([image_width / 2.0, image_height / 2.0])
+        else:
+            normalize_base = torch.FloatTensor([image_width / 2.0, image_height / 2.0])
+
         normalize_base = normalize_base.unsqueeze(0).unsqueeze(-1)
 
         for depth_i in range(64):
