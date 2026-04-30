@@ -8,13 +8,16 @@ classes_config_classic_size = {
             2: {"class_name": "car", "class_w": None, "class_h": 1.4, "class_d": None, "distance_by":"h"}
         }
 
+import numpy as np
+min_depth = np.finfo(float).eps
+max_depth = 80
 
 accurancy_threshold = 1.25
 accurancy_threshold_2 = 1.25 ** 2
 accurancy_threshold_3 = 1.25 ** 3
 
 distance_range_min = 0
-distance_range_max = 90
+distance_range_max = max_depth
 distance_range_step = 5
 
 luminosity_middle_min = 85

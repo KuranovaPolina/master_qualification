@@ -2,10 +2,14 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+import json
+import os
+
 from config import accurancy_threshold, accurancy_threshold_2, accurancy_threshold_3, distance_range_min, distance_range_max, distance_range_step, luminosity_middle_min, luminosity_middle_max
+from config import min_depth, max_depth
 
 def absRel(pred: np.ndarray, gt: np.ndarray):
-    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    mask = (gt > min_depth) & (gt < max_depth) 
 
     pred_valid = pred[mask]
     gt_valid = gt[mask]
@@ -18,7 +22,7 @@ def absRel(pred: np.ndarray, gt: np.ndarray):
     return abs_rel
 
 def RMSE(pred: np.ndarray, gt: np.ndarray):
-    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    mask = (gt > min_depth) & (gt < max_depth) 
     
     pred_valid = pred[mask]
     gt_valid = gt[mask]
@@ -31,7 +35,7 @@ def RMSE(pred: np.ndarray, gt: np.ndarray):
     return rmse
 
 def RMSE_log(pred: np.ndarray, gt: np.ndarray):
-    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    mask = (gt > min_depth) & (gt < max_depth) 
     
     pred_valid = pred[mask]
     gt_valid = gt[mask]
@@ -44,7 +48,7 @@ def RMSE_log(pred: np.ndarray, gt: np.ndarray):
     return rmse
 
 def sqRel(pred: np.ndarray, gt: np.ndarray):
-    mask = (gt > 0) & np.isfinite(gt) & np.isfinite(pred)
+    mask = (gt > min_depth) & (gt < max_depth) 
     
     pred_valid = pred[mask]
     gt_valid = gt[mask]
@@ -57,7 +61,7 @@ def sqRel(pred: np.ndarray, gt: np.ndarray):
     return abs_rel
 
 def accurancy(pred: np.ndarray, gt: np.ndarray):
-    valid_mask = (gt > 0) & (pred > 0) & np.isfinite(gt) & np.isfinite(pred)
+    valid_mask = (gt > min_depth) & (gt < max_depth) 
     
     pred_valid = pred[valid_mask]
     gt_valid = gt[valid_mask]
@@ -128,9 +132,6 @@ def get_runtime(times: np.ndarray):
     runtime = np.mean(times)
     return runtime, 1 / runtime
 
-import json
-import os
-
 def plot_metric(metrics_values, x_labels, name, color = "#2E86AB", save_dir = "metrics_plots"):
     plt.figure(figsize=(10, 5), dpi=100)
     bars = plt.bar(x_labels, metrics_values, color=color, edgecolor='black', alpha=0.9)
@@ -169,56 +170,3 @@ def draw_metrics(metrics):
     plot_metric(metrics_values[4], x_labels, "Accuracy 1.25")
     plot_metric(metrics_values[5], x_labels, "Accuracy 1.25^2")
     plot_metric(metrics_values[6], x_labels, "Accuracy 1.25^3")
-
-# From Github https://github.com/balcilar/DenseDepthMap
-def dense_map(Pts, n, m, grid):
-    ng = 2 * grid + 1
-    
-    mX = np.zeros((m,n)) + np.float64("inf")
-    mY = np.zeros((m,n)) + np.float64("inf")
-    mD = np.zeros((m,n))
-    mX[np.int32(Pts[1]),np.int32(Pts[0])] = Pts[0] - np.round(Pts[0])
-    mY[np.int32(Pts[1]),np.int32(Pts[0])] = Pts[1] - np.round(Pts[1])
-    mD[np.int32(Pts[1]),np.int32(Pts[0])] = Pts[2]
-    
-    KmX = np.zeros((ng, ng, m - ng, n - ng))
-    KmY = np.zeros((ng, ng, m - ng, n - ng))
-    KmD = np.zeros((ng, ng, m - ng, n - ng))
-    
-    for i in range(ng):
-        for j in range(ng):
-            KmX[i,j] = mX[i : (m - ng + i), j : (n - ng + j)] - grid - 1 +i
-            KmY[i,j] = mY[i : (m - ng + i), j : (n - ng + j)] - grid - 1 +i
-            KmD[i,j] = mD[i : (m - ng + i), j : (n - ng + j)]
-    S = np.zeros_like(KmD[0,0])
-    Y = np.zeros_like(KmD[0,0])
-    
-    for i in range(ng):
-        for j in range(ng):
-            s = 1/np.sqrt(KmX[i,j] * KmX[i,j] + KmY[i,j] * KmY[i,j])
-            Y = Y + s * KmD[i,j]
-            S = S + s
-    
-    S[S == 0] = 1
-    out = np.zeros((m,n))
-    out[grid + 1 : -grid, grid + 1 : -grid] = Y/S
-    return out
-
-# From Github https://github.com/BerensRWU/DenseMap#
-def lidar2cam(pts_3d_lidar, calib):
-    n = pts_3d_lidar.shape[0]
-    pts_3d_hom = np.hstack((pts_3d_lidar, np.ones((n, 1))))
-    pts_3d_cam_ref = np.dot(pts_3d_hom, np.transpose(calib.Tr_velo_to_cam))
-    pts_3d_cam_rec = np.transpose(np.dot(calib.R0_rect, np.transpose(pts_3d_cam_ref)))
-    return pts_3d_cam_rec
-
-def rect2Img(rect_pts, img_width, img_height, calib):
-    n = rect_pts.shape[0]
-    points_hom = np.hstack((rect_pts, np.ones((n,1))))
-    points_2d = np.dot(points_hom, np.transpose(calib.P2)) # nx3
-    points_2d[:,0] /= points_2d[:,2]
-    points_2d[:,1] /= points_2d[:,2]
-    
-    mask = (points_2d[:,0] >= 0) & (points_2d[:,0] <= img_width) & (points_2d[:,1] >= 0) & (points_2d[:,1] <= img_height)
-    mask = mask & (rect_pts[:,2] > 2)
-    return points_2d[mask,0:2], mask

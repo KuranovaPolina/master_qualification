@@ -2,8 +2,10 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 
+from config import min_depth, max_depth
+
 class DistanceByClassicStereo:    
-    def __init__(self, min_disparity = 0, num_disparities = 160, block_size = 5):
+    def __init__(self, min_disparity = 1, num_disparities = 192, block_size = 13):
         self.min_disparity = min_disparity
         self.num_disparities = num_disparities
         self.block_size = block_size
@@ -18,12 +20,12 @@ class DistanceByClassicStereo:
                 blockSize = self.block_size,
                 P1 = 8 * 3 * self.block_size ** 2,
                 P2 = 32 * 3 * self.block_size ** 2,
-                disp12MaxDiff = 1,
-                preFilterCap = 63,
-                uniquenessRatio = 10, 
-                speckleWindowSize = 100,
-                speckleRange = 32,
-                mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY
+                # disp12MaxDiff = 1,
+                # preFilterCap = 63,
+                # uniquenessRatio = 5, 
+                # speckleWindowSize = 150,
+                # speckleRange = 32,
+                # mode=cv2.STEREO_SGBM_MODE_SGBM_3WAY
             )
         
         disp_left = matcher.compute(img_left_gray, img_right_gray)
@@ -37,7 +39,6 @@ class DistanceByClassicStereo:
     # t[3] (нужно иначе произведение не собирается)
     
     def calculate_depth_map(self, left_path, right_path, calib):
-        # Read the stereo-pair of images
         img_left = cv2.imread(left_path)
         img_right = cv2.imread(right_path)
 
@@ -50,12 +51,17 @@ class DistanceByClassicStereo:
 
         f = K0[0][0]
         b = t1[0][0] - t0[0][0]
-        depth_map = np.divide(f * b, disp_left, out = np.zeros_like(disp_left, dtype=np.float32), where=disp_left != 0)
+
+        depth_map = np.full_like(disp_left, max_depth, dtype=np.float32)
+        depth_map = np.divide(f * b, disp_left, out = depth_map, where=disp_left != 0)
 
         return depth_map
 
 def distance_by_classic_stereo(classic_stereo_model, boxes, calib, left_img_path, right_img_path):
     depth_map = classic_stereo_model.calculate_depth_map(left_img_path, right_img_path, calib)
+
+    depth_map[depth_map < min_depth] = min_depth
+    depth_map[depth_map > max_depth] = max_depth   
 
     # plt.figure(figsize=(10, 5))
     # plt.imshow(depth_map, cmap='flag')
@@ -67,11 +73,15 @@ def distance_by_classic_stereo(classic_stereo_model, boxes, calib, left_img_path
     for box in boxes:
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
-        x = box.xywh.round().int().tolist()[0][0]
-        y = box.xywh.round().int().tolist()[0][1]
-        d = depth_map[y][x]
+        x1 = box.xyxy.round().int().tolist()[0][0]
+        y1 = box.xyxy.round().int().tolist()[0][1]
+        x2 = box.xyxy.round().int().tolist()[0][2]
+        y2 = box.xyxy.round().int().tolist()[0][3]
 
-        # print(d)
+        object_map = depth_map[y1:y2, x1:x2]
+
+        positive_values = object_map[object_map > 0]
+        d = np.min(positive_values) if positive_values.size > 0 else 0
 
         distances.append(d)
 

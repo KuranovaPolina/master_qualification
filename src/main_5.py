@@ -19,13 +19,16 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         left_img_data_folder = 'test_data/left', 
                         right_img_data_folder = 'test_data/right', 
                         calib_data_folder = 'test_data/calib', 
-                        velodyne_data_folder = 'test_data/velodyne', grid_size = 1):
+                        velodyne_data_folder = 'test_data/velodyne', 
+                        grid_size = 1):
     left_img_path = os.path.join(left_img_data_folder, "%06d.png" % cur_id)
     right_img_path = os.path.join(right_img_data_folder, "%06d.png" % cur_id)
     calib_file_path = os.path.join(calib_data_folder, "%06d.txt" % cur_id)
     velodyne_file_path = os.path.join(velodyne_data_folder, "%06d.bin" % cur_id)
 
     calibration = Calibration(calib_file_path)
+
+    start = time.perf_counter()
 
     boxes = detect_and_save(
         image_path = left_img_path,
@@ -34,19 +37,21 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         target_classes = {0: 'person', 2: 'car'}
     )
 
-    luminosities = get_luminosity(left_img_path, boxes)
-
-    img_shape = cv2.imread(left_img_path).shape
-
-    real_distances = distance_from_real_depth_map(
-        DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
-
-    start = time.perf_counter()
     distances_by_classic_stereo = distance_by_classic_stereo(
         DistanceByClassicStereo_model, boxes, calibration, 
         left_img_path = left_img_path, right_img_path = right_img_path)
+
     end = time.perf_counter()
     runtime = end - start
+
+    luminosities = get_luminosity(left_img_path, boxes)
+
+    img_shape = cv2.imread(left_img_path).shape
+    real_distances = distance_from_real_depth_map(
+        DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
+
+    print("real_distances: ", real_distances)
+    print("distances_by_classic_stereo: ", distances_by_classic_stereo)
 
     return distances_by_classic_stereo, real_distances, luminosities, runtime
 
@@ -60,13 +65,13 @@ if __name__ == "__main__":
     luminosities = []
     runtimes = []
 
-    for cur_id in [0, 1]:
+    for cur_id in [0]:
         img_distances_by_classic_stereo, img_real_distances, img_luminosities, runtime = calculate_one_image(
             cur_id, YOLO_model, DepthMap_model, DistanceByClassicStereo_model,
-            left_img_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/left',
-            right_img_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/right',
-            calib_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/calib', 
-            velodyne_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/velodyne')
+            left_img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2',
+            right_img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_3/testing/image_3',
+            calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/testing/calib', 
+            velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/testing/velodyne')
 
         real_distances.extend(img_real_distances)
         distances_by_classic_stereo.extend(img_distances_by_classic_stereo)
