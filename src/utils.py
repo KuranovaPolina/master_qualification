@@ -1,8 +1,6 @@
-import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-import json
 import os
 
 from config import accurancy_threshold, accurancy_threshold_2, accurancy_threshold_3, distance_range_min, distance_range_max, distance_range_step, luminosity_middle_min, luminosity_middle_max
