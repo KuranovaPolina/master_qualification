@@ -5,7 +5,7 @@ def object_config_print(object_config):
             Distance by: {object_config["distance_by"]}, \
             Width: {object_config["class_w"]}, \
             Height: {object_config["class_h"]}, \
-            D...: {object_config["class_d"]}")
+            Depth of object: {object_config["class_d"]}")
 
 class DistanceBySize:    
     def __init__(self, objects_config):
@@ -36,7 +36,6 @@ def distance_by_size(DistanceBySize_model, boxes, calib):
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
         d = DistanceBySize_model.calculate(box, calib)
-        # print(d)
         distances.append(d)
 
     return distances

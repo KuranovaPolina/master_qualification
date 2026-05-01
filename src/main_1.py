@@ -13,7 +13,7 @@ from real_depth_map import DepthMap, distance_from_real_depth_map
 from distance_by_size import DistanceBySize, distance_by_size
 from utils import calculate_metrics, get_runtime, calculate_metrics_by_dist, calculate_metrics_by_luminosity, draw_metrics
 
-from config import classes_config_classic_size
+from config import classes_config, classes_config_classic_size
 
 def calculate_one_image(cur_id, YOLO_model, DepthMap_model, DistanceBySize_model,
                         img_data_folder = 'test_data/left',
@@ -27,6 +27,8 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model, DistanceBySize_model
 
     calibration = Calibration(calib_file_path)
 
+    start = time.perf_counter()
+
     boxes = detect_and_save(
         image_path = img_path,
         model = YOLO_model,
@@ -34,17 +36,16 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model, DistanceBySize_model
         target_classes = target_classes
     )
 
+    distances_by_size = distance_by_size(DistanceBySize_model, boxes, calibration)
+    end = time.perf_counter()
+    runtime = end - start
+
     luminosities = get_luminosity(img_path, boxes)
 
     img_shape = cv2.imread(img_path).shape
 
     real_distances = distance_from_real_depth_map(
         DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
-
-    start = time.perf_counter()
-    distances_by_size = distance_by_size(DistanceBySize_model, boxes, calibration)
-    end = time.perf_counter()
-    runtime = end - start
 
     return distances_by_size, real_distances, luminosities, runtime
 
@@ -60,12 +61,14 @@ if __name__ == "__main__":
 
     runtimes = []
 
-    for cur_id in range(5):
+    for cur_id in [0, 1, 2, 20]:
         img_distances_by_size, img_real_distances, img_luminosities, runtime = calculate_one_image(
-            cur_id, YOLO_model, DepthMap_model, DistanceBySize_model,
-            img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2',
-            calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/testing/calib', 
-            velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/testing/velodyne')
+            cur_id, YOLO_model, DepthMap_model, DistanceBySize_model
+            # ,
+            # img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2',
+            # calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/testing/calib', 
+            # velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/testing/velodyne'
+            )
 
         real_distances.extend(img_real_distances)
         distances_by_size.extend(img_distances_by_size)
