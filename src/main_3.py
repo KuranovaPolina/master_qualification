@@ -25,6 +25,10 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
 
     calibration = Calibration(calib_file_path)
 
+    img_shape = cv2.imread(img_path).shape
+
+    start = time.perf_counter()
+
     boxes = detect_and_save(
         image_path = img_path,
         model = YOLO_model,
@@ -32,36 +36,33 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         target_classes = {0: 'person', 2: 'car'}
     )
 
-    luminosities = get_luminosity(img_path, boxes)
-
-    img_shape = cv2.imread(img_path).shape
-
-    real_distances = distance_from_real_depth_map(
-        DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
-
-    start = time.perf_counter()
     distances_by_DisNet = distance_by_DisNet(DisNet_model, boxes, img_shape)
     end = time.perf_counter()
     runtime = end - start
+
+    luminosities = get_luminosity(img_path, boxes)
+
+    real_distances = distance_from_real_depth_map(
+        DepthMap_model, boxes, img_shape, velodyne_file_path, calibration, grid_size = grid_size)
 
     return distances_by_DisNet, real_distances, luminosities, runtime
 
 if __name__ == "__main__":
     YOLO_model = YOLO('model/yolo26m.pt')
     DepthMap_model = DepthMap()
-    DisNet_model = DistanceByDisNet("model/best_disnet_model.keras")
+    DisNet_model = DistanceByDisNet("model/disnet_10_epochs_config_2_model.keras")
 
     real_distances = []
     distances_by_DisNet = []
     luminosities = []
     runtimes = []
 
-    for cur_id in [0, 1]:
+    for cur_id in range(100):
         img_distances_by_disNet, img_real_distances, img_luminosities, runtime = calculate_one_image(
             cur_id, YOLO_model, DepthMap_model, DisNet_model,
-            img_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/left',
-            calib_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/calib', 
-            velodyne_data_folder = '/Users/polinakuranova/uni/master_qualification/master_qualification/test_data/velodyne')
+            img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/testing/image_2',
+            calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/testing/calib', 
+            velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/testing/velodyne')
 
         real_distances.extend(img_real_distances)
         distances_by_DisNet.extend(img_distances_by_disNet)
@@ -101,6 +102,6 @@ if __name__ == "__main__":
 
     os.makedirs("metrics", exist_ok=True)
 
-    with open("metrics/exp3.json", "w", encoding="utf-8") as f:
+    with open("metrics/exp3_2_10.json", "w", encoding="utf-8") as f:
         json.dump(annotations, f, indent=4, ensure_ascii=False)
 

@@ -2,6 +2,8 @@ import cv2
 import os
 import json
 
+from pathlib import Path
+
 from ultralytics import YOLO
 
 from calib import Calibration
@@ -68,7 +70,7 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
                         calib_data_folder = 'test_data/calib', 
                         velodyne_data_folder = 'test_data/velodyne',
                         output_folder = 'test_data/velodyne',
-                        grid_size = 10):
+                        grid_size = 1):
     img_path = os.path.join(img_data_folder, "%06d.png" % cur_id)
 
     if not Path(img_path).exists():
@@ -92,15 +94,13 @@ def calculate_one_image(cur_id, YOLO_model, DepthMap_model,
         DepthMap_model, boxes, cv2.imread(img_path).shape, velodyne_file_path, calibration, cur_id, output_folder, grid_size = grid_size)
 
 
-
 if __name__ == "__main__":
     YOLO_model = YOLO('model/yolo26m.pt')
     DepthMap_model = DepthMap()
 
-    for cur_id in range(1000, 2000):
+    for cur_id in range(4276, 7481):
         calculate_one_image(cur_id, YOLO_model, DepthMap_model, 
                             img_data_folder = '../kitti_dataset/object_detection_dataset/data_object_image_2/training/image_2', 
                             calib_data_folder = '../kitti_dataset/object_detection_dataset/data_object_calib/training/calib', 
                             velodyne_data_folder = '../kitti_dataset/object_detection_dataset/data_object_velodyne/training/velodyne',
-                            output_folder = '../kitti_dataset_convert_config_1',
-                            grid_size = 5)
+                            output_folder = '../kitti_dataset_convert_config_2')
