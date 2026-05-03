@@ -13,11 +13,10 @@ from config import classes_config
 class DistanceByDisNet:
     def __init__(self, model_path = "model/best_disnet_model.keras"):
         if os.path.exists(model_path):
-            print("Continue training from checkpoints ...")
+            print("Checkpoints founded ...")
             self.model = load_model(model_path)
         else:
-            print("No model checkpoints founded, construct new model...")
-            self.model = construct_DisNet_model()
+            print("No model checkpoints founded")
 
         self.callbacks = [EarlyStopping(monitor='val_loss', patience=200, verbose=1), 
             ModelCheckpoint(filepath=model_path, verbose=1, save_best_only=True)]
