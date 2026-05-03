@@ -57,7 +57,7 @@ def draw_boxes(image, boxes, classes, scores, distances, class_names, colors):
     return image
 
 
-class YOLO_np():
+class YOLO_with_depth():
     def __init__(self, classes_path = "model/configs/kitty_all_except_nodata.txt", 
                         anchors_path = "model/configs/yolo3_anchors.txt",
                         weights_path = "model/ep043-dump.h5", 

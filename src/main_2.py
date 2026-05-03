@@ -7,7 +7,7 @@ import json
 from calib import Calibration
 from get_luminosity import get_luminosity_2
 from real_depth_map import DepthMap, distance_from_real_depth_map_2
-from distance_by_yolo_with_depth import YOLO_np, distance_by_YOLO_with_depth
+from distance_by_yolo_with_depth import YOLO_with_depth, distance_by_YOLO_with_depth
 
 from utils import calculate_metrics, get_runtime, calculate_metrics_by_dist, calculate_metrics_by_luminosity, draw_metrics
 
@@ -38,7 +38,7 @@ def calculate_one_image(yolo_with_depth_model, DepthMap_model, cur_id, img_data_
     return distances_by_YOLO_with_depth, real_distances, luminosities, runtime
 
 if __name__ == "__main__":
-    YOLO_np_model = YOLO_np(classes_path = "model/configs/kitty_all_except_nodata.txt", 
+    YOLO_np_model = YOLO_with_depth(classes_path = "model/configs/kitty_all_except_nodata.txt", 
                         anchors_path = "model/configs/yolo3_anchors.txt",
                         weights_path = "model/ep043-dump.h5", 
                         classes = [0, 1])
