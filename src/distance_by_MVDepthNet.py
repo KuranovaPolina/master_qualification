@@ -10,16 +10,18 @@ from torch import Tensor
 
 import matplotlib.pyplot as plt
 
+from config import min_depth, max_depth
+
 class DistanceByMVDepthNet:
-    def __init__(self, model_path, device = 'cpu'):
+    def __init__(self, model_path):
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
         self.model = depthNet()
-        model_data = torch.load(model_path, map_location=torch.device(device), weights_only=True)
+        model_data = torch.load(model_path, map_location=torch.device(self.device), weights_only=True)
         self.model.load_state_dict(model_data['state_dict'])
-        self.model = self.model.cuda() if device == 'cuda' else self.model.cpu()
+        self.model = self.model.cuda() if self.device == 'cuda' else self.model.cpu()
         cudnn.benchmark = True
         self.model.eval()
-
-        self.device = device
 
         self.pixel_coordinate = np.indices([320, 256]).astype(np.float32)
         self.pixel_coordinate = np.concatenate(
@@ -109,7 +111,8 @@ class DistanceByMVDepthNet:
 
         depth_map = np.squeeze(depth_map[0].cpu().data.numpy())
 
-        depth_map[depth_map < 1e-2] = 1e-2
+        tmp = 1 / max_depth
+        depth_map[depth_map < tmp] = tmp
 
         depth_map = 1 / depth_map
 
@@ -130,11 +133,15 @@ def distance_by_MVDepthNet(mvdepthnet_model, boxes, calib, left_img_path, right_
     for box in boxes:
         print(f"Class: {box.cls}, Confidence: {box.conf}, Box: {box.xywh}")
 
-        x = box.xywh.round().int().tolist()[0][0]
-        y = box.xywh.round().int().tolist()[0][1]
-        d = depth_map[y][x]
+        x1 = box.xyxy.round().int().tolist()[0][0]
+        y1 = box.xyxy.round().int().tolist()[0][1]
+        x2 = box.xyxy.round().int().tolist()[0][2]
+        y2 = box.xyxy.round().int().tolist()[0][3]
 
-        # print(d)
+        object_map = depth_map[y1:y2, x1:x2]
+
+        positive_values = object_map[object_map > 0]
+        d = np.min(positive_values) if positive_values.size > 0 else 0
 
         distances.append(d)
 
