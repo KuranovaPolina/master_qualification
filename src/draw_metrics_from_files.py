@@ -5,21 +5,22 @@ from pathlib import Path
 import glob
 import os
 
-file_paths = ["/home/polina/Documents/master_qualification/results/exp1_test_300/exp1.json",
-                "/home/polina/Documents/master_qualification/results/exp2_dump_test_300/exp2_dump.json",
-                "/home/polina/Documents/master_qualification/results/exp3_10_epochs_test_300/exp3_10_epochs.json",
-                "/home/polina/Documents/master_qualification/results/exp4_NK_test_300/exp4_NK.json",
-                # "/home/polina/Documents/master_qualification/results/exp5_test1_300/exp5.json", 
-                "/home/polina/Documents/master_qualification/results/exp6_test_300/exp6.json"]
+file_paths = ["/home/polina/Documents/master_qualification/results/1000/exp1_test_1000/exp1.json",
+                "/home/polina/Documents/master_qualification/results/1000/exp2_test_1000/exp2_1000.json",
+                "/home/polina/Documents/master_qualification/results/1000/exp3_test_1000/exp3_2_20_epochs.json",
+                "/home/polina/Documents/master_qualification/results/1000/exp4_test_1000/exp4_NK.json",
+                "/home/polina/Documents/master_qualification/results/1000/exp5_test_1000/exp5.json",
+                "/home/polina/Documents/master_qualification/results/1000/exp6_test_1000/exp6_1000.json"]
 
-names = ["classic size", "yolo with depth", "DisNet", "Zoe NK", "MVDepth"]
+names = ["Classic by size", "YOLO with depth", "By DisNet", "By Zoe Depth", "Classic stereo", "MVDepth"]
+min_d = 0
+max_d = 20
 
 def plot_metrics_by_dist_bars(file_paths, output_dir="plots", suffix="", metric_names=None):
     os.makedirs(output_dir, exist_ok=True)
 
-    # Собираем данные: {файл: {dist_mid: [7 метрик], dist_label: "start-end"}}
     all_data = {}
-    distance_bins = []  # список кортежей (mid, label)
+    distance_bins = []
 
     for i, file_path in enumerate(file_paths):
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -37,27 +38,26 @@ def plot_metrics_by_dist_bars(file_paths, output_dir="plots", suffix="", metric_
             all_data[label]["values"][dist_mid] = metrics
             all_data[label]["labels"][dist_mid] = f"{b['start']}-{b['end']}"
 
-        # Запоминаем общие интервалы дистанции (берём из первого валидного файла)
         if not distance_bins:
             distance_bins = [(b["start"], f"{b['start']}-{b['end']}") for _, b in sorted_bins]
 
     print(distance_bins)
 
-    # Параметры для группировки столбцов
+    distance_bins = [(start, label) for start, label in distance_bins if min_d <= start < max_d]
+
+    print(distance_bins)
+
     n_files = len(all_data)
-    x_positions = np.arange(len(distance_bins)) * 6  # позиции групп на оси X
-    total_width = 0.8 * 6
+    x_positions = np.arange(len(distance_bins))
+    total_width = 0.8
     bar_width = total_width / n_files
     file_labels = names
 
     for metric_idx in range(7):
-        fig, ax = plt.subplots(figsize=(30, 10))
-
-        # Цветовая схема (автоматическая из matplotlib)
+        fig, ax = plt.subplots(figsize=(10, 5))
         colors = plt.cm.tab10(np.linspace(0, 1, n_files))
         
         for i, (file_label, file_data) in enumerate(all_data.items()):
-            # Извлекаем значения для текущей метрики в порядке distance_bins
             y_vals = []
             for start, _ in distance_bins:
                 if(start in file_data["values"]):
@@ -74,12 +74,10 @@ def plot_metrics_by_dist_bars(file_paths, output_dir="plots", suffix="", metric_
                 plt.text(bar.get_x() + bar.get_width()/2, height, f"{height:.2f}", 
                         ha='center', va='bottom', fontsize=9, rotation=45)
     
-        # Оформление осей
         ax.set_title(f"Метрика {metric_names[metric_idx]}", fontsize=14, fontweight='bold', pad=15)
-        ax.set_xlabel("Дистанция, м", fontsize=11)
+        ax.set_xlabel("Расстояние, м", fontsize=11)
         ax.set_ylabel(f"{metric_names[metric_idx]}", fontsize=11)
         
-        # Подписи интервалов на оси X
         dist_labels = [label for _, label in distance_bins]
         ax.set_xticks(x_positions)
         ax.set_xticklabels(dist_labels, rotation=45, ha='right', fontsize=9)
@@ -90,7 +88,6 @@ def plot_metrics_by_dist_bars(file_paths, output_dir="plots", suffix="", metric_
         
         plt.tight_layout()
         
-        # Сохранение
         output_filename = f"metric_{metric_idx+1}_by_dist{suffix}.png"
         output_path = os.path.join(output_dir, output_filename)
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
@@ -108,7 +105,7 @@ if __name__ == "__main__":
     
     plot_metrics_by_dist_bars(
         file_paths, 
-        output_dir="plots_bars_", 
-        suffix="_v1",
-        metric_names=metric_names  # можно убрать, если не нужны кастомные названия
+        output_dir="plots_bars", 
+        suffix="_0_20",
+        metric_names=metric_names
     )
